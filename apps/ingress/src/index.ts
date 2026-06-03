@@ -12,7 +12,10 @@
  * `test/send.sh`.
  */
 
-import type { IngressMessage } from "@manual.email/contracts";
+import {
+  type IngressMessage,
+  inboundMessageSchema,
+} from "@manual.email/contracts";
 import { createDb, parseAddress } from "@manual.email/db";
 import { idempotencyKey, isProcessed, markProcessed } from "./idempotency";
 import { resolveRecipient } from "./resolution";
@@ -24,7 +27,10 @@ export default {
   async email(message, env, _ctx): Promise<void> {
     const raw = await new Response(message.raw).arrayBuffer();
     // TODO: persist raw to R2 + metadata to D1.
-    await env.INGRESS_QUEUE.send({
+    // Validate at the trust boundary: this is the only point where untrusted
+    // Email Routing data becomes a structured payload. The queue consumer
+    // then trusts the contract type (no re-parse).
+    const inbound = inboundMessageSchema.parse({
       idempotencyKey: await idempotencyKey(
         message.headers,
         raw,
@@ -35,6 +41,7 @@ export default {
       rawSize: raw.byteLength,
       receivedAt: new Date().toISOString(),
     } satisfies IngressMessage);
+    await env.INGRESS_QUEUE.send(inbound);
   },
 
   async queue(batch, env, _ctx): Promise<void> {
