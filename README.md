@@ -1,7 +1,8 @@
 # manual.email
 
-A Bun-managed monorepo. See [`docs/architecture.md`](docs/architecture.md) for
-how the system fits together.
+A cool, humanist email client — open source, calm, and built for people, not
+engagement metrics. This is the Bun monorepo behind it; see
+[`docs/architecture.md`](docs/architecture.md) for how the system fits together.
 
 ## Layout
 

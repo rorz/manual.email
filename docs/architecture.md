@@ -1,6 +1,11 @@
 # Architecture
 
-manual.email is a Bun monorepo. Inbound and outbound mail are handled by two
+**manual.email is a humanist email client** — open source, calm, and built for
+people rather than for engagement metrics. The product goal shapes the
+engineering: mail must arrive exactly once, route predictably, and never get
+silently dropped, so the system is small, legible, and unsurprising.
+
+It is a Bun monorepo. Inbound and outbound mail are handled by two
 single-purpose Cloudflare Workers, decoupled by Cloudflare Queues. Shared
 schema and wire contracts live in `packages/*` so the workers never duplicate a
 type or a query.
