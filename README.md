@@ -10,6 +10,7 @@ A Bun-managed monorepo.
 | [`apps/ingress`](apps/ingress) | Cloudflare Worker | Inbound email routing, queueing, filtering & sorting |
 | [`apps/egress`](apps/egress) | Cloudflare Worker | Outbound email sending |
 | [`packages/db`](packages/db) | [Drizzle](https://orm.drizzle.team) → D1 (SQLite) + R2 | Schema-as-code, inferred row types, R2 key helpers & generated migrations |
+| [`packages/contracts`](packages/contracts) | [oRPC](https://orpc.unnoq.com) + Zod 4 | Contract-first schemas; queue payload types shared by the workers |
 | [`appraise`](appraise) | Bun + low-level TS | Repo-grown quality checks (e.g. 350-line file ceiling) |
 
 ## Tooling
@@ -44,6 +45,29 @@ Workers build that needs the `cloudflare()` Vite plugin).
 
 Set the real D1 id (`wrangler d1 create manual-email`) in each `wrangler.jsonc`
 before deploying — see [`packages/db`](packages/db/README.md).
+
+## Idempotency
+
+Every inbound message carries a stable **`dedupeKey`** (the RFC822 `Message-ID`,
+namespaced `mid:…`, else a `sha256:…` of the raw body). The ingress queue
+consumer is the single chokepoint: it skips any key already in the
+`processed_messages` D1 ledger, and only records a key **after** side-effects
+succeed — so a retry re-runs rather than silently dropping mail. This absorbs
+both Cloudflare Queues' at-least-once retries and Email Routing redeliveries.
+
+### Testing email locally
+
+Cloudflare exposes a local `/cdn-cgi/handler/email` endpoint under `wrangler dev`
+([docs](https://developers.cloudflare.com/email-routing/email-workers/local-development/)):
+
+```sh
+bun run db:migrate:local                 # ensure the local D1 schema exists
+bun --filter @manual.email/ingress dev   # ingress on :10130 (queue + D1 local)
+./apps/ingress/test/send.sh              # POSTs test/sample.eml twice
+```
+
+The fixed `Message-ID` in `sample.eml` means the second delivery is deduped —
+`processed_messages` ends with exactly one row.
 
 ## Requirements
 

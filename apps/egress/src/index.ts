@@ -5,13 +5,7 @@
  * (Cloudflare Email Routing's send_email). Logic to be fleshed out.
  */
 
-// import { EmailMessage } from "cloudflare:email";
-
-interface EgressMessage {
-  to: string;
-  from: string;
-  subject: string;
-}
+import type { EgressMessage } from "@manual.email/contracts";
 
 export default {
   async queue(batch, env, _ctx): Promise<void> {

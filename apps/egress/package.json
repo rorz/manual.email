@@ -13,5 +13,8 @@
   "devDependencies": {
     "typescript": "^6.0.3",
     "wrangler": "^4.97.0"
+  },
+  "dependencies": {
+    "@manual.email/contracts": "workspace:*"
   }
 }

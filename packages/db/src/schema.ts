@@ -80,6 +80,15 @@ export const messages = sqliteTable(
   ],
 );
 
+/**
+ * Idempotency ledger: keys of inbound messages ingress has fully processed, so
+ * queue retries / Email Routing redeliveries are dropped, not reprocessed.
+ */
+export const processedMessages = sqliteTable("processed_messages", {
+  key: text("key").primaryKey(),
+  seenAt: integer("seen_at").notNull(),
+});
+
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 
