@@ -1,6 +1,7 @@
 # manual.email
 
-A Bun-managed monorepo.
+A Bun-managed monorepo. See [`docs/architecture.md`](docs/architecture.md) for
+how the system fits together.
 
 ## Layout
 
