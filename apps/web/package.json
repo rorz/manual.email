@@ -1,0 +1,35 @@
+{
+  "name": "@manual.email/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinext dev --port 10120",
+    "build": "vinext build",
+    "start": "vinext start --port 10120",
+    "deploy": "vinext deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.2.7",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-rsc": "^0.5.27",
+    "react-server-dom-webpack": "19.2.7",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vinext": "^0.0.55",
+    "vite": "^8.0.16"
+  },
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
+}

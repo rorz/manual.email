@@ -1,0 +1,15 @@
+{
+  "name": "@manual.email/appraise",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "appraise": "bun run index.ts",
+    "appraise:max-file-lines": "bun run max-file-lines.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "typescript": "^6.0.3"
+  }
+}

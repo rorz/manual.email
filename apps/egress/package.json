@@ -1,0 +1,17 @@
+{
+  "name": "@manual.email/egress",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 10140 --inspector-port 10141",
+    "deploy": "wrangler deploy",
+    "start": "wrangler dev --port 10140 --inspector-port 10141",
+    "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "wrangler": "^4.97.0"
+  }
+}

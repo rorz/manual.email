@@ -1,0 +1,40 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "egress",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "manual-email",
+      // Replace with the real D1 id from `wrangler d1 create manual-email`.
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MESSAGES_BUCKET",
+      "bucket_name": "manual-email-messages"
+    }
+  ],
+  "send_email": [
+    {
+      "name": "SEND_EMAIL"
+    }
+  ],
+  "queues": {
+    "consumers": [
+      {
+        "queue": "manual-email-egress",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        "dead_letter_queue": "manual-email-egress-dlq"
+      }
+    ]
+  }
+}
