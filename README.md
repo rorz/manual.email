@@ -48,13 +48,19 @@ before deploying — see [`packages/db`](packages/db/README.md).
 
 ## Idempotency
 
-Every inbound message carries a stable **`idempotencyKey`** (the RFC822
-`Message-ID`, namespaced `mid:…`, else a `sha256:…` of the raw body). The
-ingress queue consumer is the single chokepoint: it skips any key already in
-the `processed_messages` D1 ledger, and only records a key **after** a terminal
-routing decision is made — so a retry re-runs rather than silently dropping
-mail. This absorbs both Cloudflare Queues' at-least-once retries and Email
-Routing redeliveries.
+Every inbound message carries a stable, **recipient-scoped `idempotencyKey`**
+(`<recipient>|mid:…` or `<recipient>|sha256:…`). It's scoped by recipient
+because Email Routing invokes the handler once per recipient with the same
+Message-ID/bytes — an unscoped key would drop the message for every recipient
+after the first. The ingress queue consumer is the single chokepoint: it skips
+any key already in the `processed_messages` D1 ledger, and only records a key
+**after** a terminal routing decision is made — so a retry re-runs rather than
+silently dropping mail. This absorbs both Cloudflare Queues' at-least-once
+retries and Email Routing redeliveries.
+
+All worker D1 access goes through the Drizzle client (`createDb` in
+`packages/db`), so runtime queries are schema-derived and can't drift from the
+migrations.
 
 Inbound recipients are resolved to a platform account by exact match against
 the registered `addresses` table (first-party `manual.email` addresses only),

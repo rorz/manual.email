@@ -6,18 +6,20 @@
  * `null` and are bounced upstream.
  */
 
-import { parseAddress } from "@manual.email/db";
+import { addresses, type Db, parseAddress } from "@manual.email/db";
+import { eq } from "drizzle-orm";
 
 export async function resolveRecipient(
-  db: D1Database,
+  db: Db,
   raw: string,
 ): Promise<string | null> {
   const parsed = parseAddress(raw);
   if (!parsed) return null;
 
   const row = await db
-    .prepare("SELECT account_id FROM addresses WHERE address = ?")
-    .bind(parsed.canonical)
-    .first<{ account_id: string }>();
-  return row?.account_id ?? null;
+    .select({ accountId: addresses.accountId })
+    .from(addresses)
+    .where(eq(addresses.address, parsed.canonical))
+    .get();
+  return row?.accountId ?? null;
 }

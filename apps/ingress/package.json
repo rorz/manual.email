@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@manual.email/contracts": "workspace:*",
-    "@manual.email/db": "workspace:*"
+    "@manual.email/db": "workspace:*",
+    "drizzle-orm": "^0.45.2"
   }
 }
