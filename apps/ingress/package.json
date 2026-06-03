@@ -17,6 +17,7 @@
     "wrangler": "^4.97.0"
   },
   "dependencies": {
-    "@manual.email/contracts": "workspace:*"
+    "@manual.email/contracts": "workspace:*",
+    "@manual.email/db": "workspace:*"
   }
 }

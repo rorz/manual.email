@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Send the sample message to a locally-running ingress Worker, twice, to prove
-# the queue consumer dedupes the redelivery. Run `bun --filter @manual.email/ingress dev`
+# the consumer drops the redelivery (idempotency). Run `bun --filter @manual.email/ingress dev`
 # first, then: ./apps/ingress/test/send.sh
 set -euo pipefail
 PORT="${PORT:-10130}"

@@ -48,12 +48,17 @@ before deploying — see [`packages/db`](packages/db/README.md).
 
 ## Idempotency
 
-Every inbound message carries a stable **`dedupeKey`** (the RFC822 `Message-ID`,
-namespaced `mid:…`, else a `sha256:…` of the raw body). The ingress queue
-consumer is the single chokepoint: it skips any key already in the
-`processed_messages` D1 ledger, and only records a key **after** side-effects
-succeed — so a retry re-runs rather than silently dropping mail. This absorbs
-both Cloudflare Queues' at-least-once retries and Email Routing redeliveries.
+Every inbound message carries a stable **`idempotencyKey`** (the RFC822
+`Message-ID`, namespaced `mid:…`, else a `sha256:…` of the raw body). The
+ingress queue consumer is the single chokepoint: it skips any key already in
+the `processed_messages` D1 ledger, and only records a key **after** a terminal
+routing decision is made — so a retry re-runs rather than silently dropping
+mail. This absorbs both Cloudflare Queues' at-least-once retries and Email
+Routing redeliveries.
+
+Inbound recipients are resolved to a platform account by exact match against
+the registered `addresses` table (first-party `manual.email` addresses only),
+canonicalised so `+tag` sub-addressing resolves to the base address.
 
 ### Testing email locally
 
@@ -66,7 +71,7 @@ bun --filter @manual.email/ingress dev   # ingress on :10130 (queue + D1 local)
 ./apps/ingress/test/send.sh              # POSTs test/sample.eml twice
 ```
 
-The fixed `Message-ID` in `sample.eml` means the second delivery is deduped —
+The fixed `Message-ID` in `sample.eml` means the second delivery is skipped —
 `processed_messages` ends with exactly one row.
 
 ## Requirements

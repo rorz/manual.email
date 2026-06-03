@@ -8,5 +8,6 @@
  * `wrangler d1 migrations apply`.
  */
 
+export * from "./address";
 export * from "./keys";
 export * from "./schema";

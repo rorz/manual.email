@@ -4,8 +4,8 @@ import { z } from "zod";
 
 /** Inbound mail enqueued by ingress (from Email Routing). */
 export const inboundMessageSchema = z.object({
-  /** Idempotency key — see ingress `dedupeKey` (RFC822 Message-ID or body hash). */
-  dedupeKey: z.string().min(1),
+  /** Idempotency key — see ingress `idempotencyKey` (RFC822 Message-ID or body hash). */
+  idempotencyKey: z.string().min(1),
   from: z.email(),
   to: z.email(),
   rawSize: z.number().int().nonnegative(),
