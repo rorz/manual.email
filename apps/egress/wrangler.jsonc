@@ -1,6 +1,6 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "egress",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "manual-email-egress",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -12,7 +12,13 @@
       "binding": "DB",
       "database_name": "manual-email",
       // Replace with the real D1 id from `wrangler d1 create manual-email`.
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb"
+    }
+  ],
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "egress.manual.email"
     }
   ],
   "r2_buckets": [

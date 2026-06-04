@@ -32,3 +32,8 @@ bun-debug.log*
 .turbo/
 coverage/
 *.tsbuildinfo
+
+# vinext regenerates apps/web/worker/index.ts on every deploy (image-opt entry).
+# Our wrangler `main` points at vinext's app-router-entry, so this copy is an
+# unused build artifact — ignore it so it can't drift or break the gate.
+apps/web/worker/

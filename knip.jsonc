@@ -4,6 +4,7 @@
     "apps/web": {
       // `cloudflare:workers` is a workerd-provided virtual module (like
       // `node:*`), not an npm package — keep knip from flagging it.
+      // (worker/index.ts is a vinext deploy artifact, excluded via .gitignore.)
       "ignoreDependencies": ["cloudflare"]
     }
   },

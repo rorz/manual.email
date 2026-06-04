@@ -1,25 +1,43 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "web",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "manual-email-web",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
   // vinext's App Router entry; vinext deploy can still regenerate a custom
   // worker/index.ts if image optimization is ever needed.
   "main": "vinext/server/app-router-entry",
+  "vars": {
+    // Non-sensitive. The secret (BETTER_AUTH_SECRET) and the dashboard key
+    // (BETTER_AUTH_API_KEY) are set via `wrangler secret put`, not here.
+    "BETTER_AUTH_URL": "https://manual.email"
+  },
   "assets": {
     "directory": "dist/client",
     "not_found_handling": "none",
     "binding": "ASSETS"
   },
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "manual.email"
+    }
+  ],
   "observability": {
-    "enabled": true
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "head_sampling_rate": 1
+    }
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "manual-email",
       // Replace with the real D1 id from `wrangler d1 create manual-email`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb",
       "migrations_dir": "../../packages/db/migrations"
     }
   ],

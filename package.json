@@ -3,11 +3,40 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "appraise"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*",
+      "appraise"
+    ],
+    "catalog": {
+      "@better-auth/infra": "0.2.11",
+      "@biomejs/biome": "2.4.16",
+      "@cloudflare/vite-plugin": "1.39.2",
+      "@orpc/contract": "1.14.4",
+      "@tailwindcss/postcss": "4.3.0",
+      "@types/bun": "1.3.14",
+      "@types/node": "20.19.41",
+      "@types/react": "19.2.16",
+      "@types/react-dom": "19.2.3",
+      "@vitejs/plugin-react": "6.0.2",
+      "@vitejs/plugin-rsc": "0.5.27",
+      "better-auth": "1.6.14",
+      "drizzle-kit": "0.31.10",
+      "drizzle-orm": "0.45.2",
+      "knip": "6.15.0",
+      "next": "16.2.7",
+      "react": "19.2.7",
+      "react-dom": "19.2.7",
+      "react-server-dom-webpack": "19.2.7",
+      "tailwindcss": "4.3.0",
+      "typescript": "6.0.3",
+      "vinext": "0.0.55",
+      "vite": "8.0.16",
+      "wrangler": "4.97.0",
+      "zod": "4.4.3"
+    }
+  },
   "scripts": {
     "dev": "bun --filter '*' --elide-lines 0 dev",
     "dev:web": "bun --filter '@manual.email/web' dev",
@@ -21,20 +50,20 @@
     "knip": "knip",
     "appraise": "bun run appraise/index.ts",
     "check": "biome check . && bun run typecheck && knip && bun run appraise",
-    "deploy": "bun --filter '*' deploy",
-    "deploy:web": "bun --filter '@manual.email/web' deploy",
-    "deploy:ingress": "bun --filter '@manual.email/ingress' deploy",
-    "deploy:egress": "bun --filter '@manual.email/egress' deploy",
+    "deploy": "bun run db:migrate:prod && bun --filter '*' deploy",
+    "deploy:web": "bun run db:migrate:prod && bun --filter '@manual.email/web' deploy",
+    "deploy:ingress": "bun run db:migrate:prod && bun --filter '@manual.email/ingress' deploy",
+    "deploy:egress": "bun run db:migrate:prod && bun --filter '@manual.email/egress' deploy",
     "typecheck": "bun run cf-typegen && bun --filter '*' typecheck",
     "cf-typegen": "bun --filter '@manual.email/ingress' --filter '@manual.email/egress' --filter '@manual.email/web' cf-typegen",
     "db:generate": "bun --filter '@manual.email/db' db:generate",
-    "db:migrate:local": "bun --filter '@manual.email/ingress' db:migrate:local",
-    "db:migrate": "bun --filter '@manual.email/ingress' db:migrate"
+    "db:migrate:local": "bun --filter '@manual.email/db' db:migrate:local",
+    "db:migrate:prod": "bun --filter '@manual.email/db' db:migrate:prod"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16",
-    "knip": "6.15.0",
-    "typescript": "^6.0.3"
+    "@biomejs/biome": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:"
   },
   "engines": {
     "bun": ">=1.3.0"

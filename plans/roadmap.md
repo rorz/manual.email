@@ -75,7 +75,7 @@ In rough dependency order:
   the real ID from `wrangler d1 create manual-email`.
 - Create resources: D1 `manual-email`, R2 `manual-email-messages`, and the four
   queues (`manual-email-{ingress,egress}` + their `-dlq`).
-- Apply migrations remotely (`bun run db:migrate`).
+- Apply migrations remotely (`bun run db:migrate:prod`).
 - Enable **Cloudflare Email Service** (beta, Workers Paid) and verify the
   sending domain for egress.
 - Configure **Email Routing**: MX records for `manual.email` + a rule routing

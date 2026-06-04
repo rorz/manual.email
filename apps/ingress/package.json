@@ -8,18 +8,16 @@
     "deploy": "wrangler deploy",
     "start": "wrangler dev --port 10130 --inspector-port 10131 --persist-to ../../.wrangler/state",
     "cf-typegen": "wrangler types",
-    "db:migrate:local": "wrangler d1 migrations apply manual-email --local --persist-to ../../.wrangler/state",
-    "db:migrate": "wrangler d1 migrations apply manual-email --remote",
     "seed": "bun scripts/seed.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^6.0.3",
-    "wrangler": "^4.97.0"
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
   },
   "dependencies": {
     "@manual.email/contracts": "workspace:*",
     "@manual.email/db": "workspace:*",
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "catalog:"
   }
 }

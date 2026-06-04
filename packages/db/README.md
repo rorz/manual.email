@@ -36,8 +36,9 @@ bun run db:generate   # drizzle-kit generate -> migrations/NNNN_*.sql
   located via `messages.r2_key`.
 
 Both bindings are declared in `apps/ingress` and `apps/egress`
-`wrangler.jsonc`. **ingress owns the migrations** (`migrations_dir` points
-here; the `db:migrate*` scripts live there).
+`wrangler.jsonc`. **This package owns the migrations**: the schema, the
+generated migrations, and a minimal `wrangler.jsonc` (D1 binding +
+`migrations_dir`) that the `db:migrate*` scripts apply against.
 
 ## Migrations
 
@@ -47,7 +48,7 @@ no Cloudflare credentials):
 ```sh
 bun run db:generate       # regenerate after a schema change
 bun run db:migrate:local  # apply to local D1 (miniflare)
-bun run db:migrate        # apply to remote D1 (set the real database_id first)
+bun run db:migrate:prod   # apply to remote D1 (set the real database_id first)
 ```
 
 > For `drizzle-kit push`/`studio` against a **remote** D1, add

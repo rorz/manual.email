@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import { dash } from "@better-auth/infra";
 import {
   account,
   createDb,
@@ -43,8 +44,15 @@ const createAuth = () =>
       },
     },
     // Must be last: lets server actions persist the session cookie that
-    // `auth.api.*` calls produce.
-    plugins: [nextCookies()],
+    // `auth.api.*` calls produce. The Better Auth Infrastructure dashboard
+    // (analytics, audit logs, admin APIs) is enabled when an API key is
+    // present — set as a secret in prod, left empty for local dev.
+    plugins: [
+      ...(env.BETTER_AUTH_API_KEY
+        ? [dash({ apiKey: env.BETTER_AUTH_API_KEY })]
+        : []),
+      nextCookies(),
+    ],
   });
 
 let cached: ReturnType<typeof createAuth> | undefined;

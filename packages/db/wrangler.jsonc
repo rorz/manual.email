@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Not a deployed Worker. This config exists only so `wrangler d1 migrations
+  // apply` has the D1 binding + migrations dir — packages/db owns the schema,
+  // the generated migrations, and applying them (local + prod).
+  "name": "manual-email-db",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "manual-email",
+      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb",
+      "migrations_dir": "./migrations"
+    }
+  ]
+}

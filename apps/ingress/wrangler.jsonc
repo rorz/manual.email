@@ -1,6 +1,6 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ingress",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "manual-email-ingress",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -11,15 +11,19 @@
     {
       "binding": "DB",
       "database_name": "manual-email",
-      // Replace with the real D1 id from `wrangler d1 create manual-email`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "../../packages/db/migrations"
+      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb"
     }
   ],
   "r2_buckets": [
     {
       "binding": "MESSAGES_BUCKET",
       "bucket_name": "manual-email-messages"
+    }
+  ],
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "ingress.manual.email"
     }
   ],
   "queues": {

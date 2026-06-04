@@ -35,11 +35,13 @@ migrations, and `wrangler` applies them (D1-native migration tracking):
 ```sh
 bun run db:generate       # schema change -> new migration in packages/db
 bun run db:migrate:local  # apply to local D1 (miniflare)
-bun run db:migrate        # apply to remote D1 (needs the real database_id)
+bun run db:migrate:prod   # apply to remote D1 (needs the real database_id)
 ```
 
 `ingress` and `egress` declare both bindings in their `wrangler.jsonc`;
-**ingress owns the migrations** (`migrations_dir` + the `db:migrate*` scripts).
+**`packages/db` owns the migrations** — it holds the schema, the generated
+migrations, and its own minimal `wrangler.jsonc` (D1 binding + `migrations_dir`)
+that the `db:migrate*` scripts apply against.
 The `web` app binds the same resources at deploy time — `vinext deploy`
 auto-generates its `wrangler.jsonc`/`vite.config.ts`, and the bindings get
 added to that generated file (hand-authoring web's `wrangler.jsonc` forces a

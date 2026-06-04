@@ -12,12 +12,15 @@
   },
   "scripts": {
     "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply manual-email --local --persist-to ../../.wrangler/state",
+    "db:migrate:prod": "wrangler d1 migrations apply manual-email --remote",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "catalog:"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.10"
+    "drizzle-kit": "catalog:",
+    "wrangler": "catalog:"
   }
 }

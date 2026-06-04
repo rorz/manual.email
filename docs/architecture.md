@@ -66,7 +66,7 @@ mail for inspection instead of dropping it. The DLQ path does trivial work
 - **D1 `manual-email`** — the mail tables (`accounts`, `addresses` for recipient
   → account resolution, `messages`, `processed_messages` idempotency ledger,
   `dead_letters`) plus BetterAuth's `user`/`session`/`account`/`verification`
-  tables (web auth). `apps/ingress` owns the migrations
+  tables (web auth). `packages/db` owns the migrations
   (`packages/db/migrations`); all three workers bind the database as `DB`.
   Sign-up is owned by the web app (see below); `apps/ingress/scripts/seed.ts`
   (`bun run --filter @manual.email/ingress seed`) remains for provisioning
@@ -130,9 +130,22 @@ the web app is not an open relay.
 - `bun run check` — the full gate: Biome + typecheck (regenerates worker types
   first) + Knip + appraise.
 - `bun run db:generate` — regenerate migrations from the Drizzle schema;
-  `db:migrate:local` / `db:migrate` to apply.
+  `db:migrate:local` / `db:migrate:prod` to apply.
 - Local inbound test: `apps/ingress/test/send.sh` POSTs to
   `/cdn-cgi/handler/email` (see Email Routing local-dev docs).
+
+## Deploying
+
+`bun run deploy` (or `deploy:web` / `deploy:ingress` / `deploy:egress`) applies
+any **pending remote D1 migrations first**, then deploys the worker(s). D1
+migrations are tracked and idempotent, so this is a no-op when nothing is
+pending — but it means prod can never run against an unmigrated schema. Because
+deploy applies migrations, review generated migrations before shipping.
+
+Prod auth needs these set once per worker via `wrangler secret put` (run in the
+worker's dir, e.g. `apps/web`): `BETTER_AUTH_SECRET` and `BETTER_AUTH_API_KEY`
+(web). `BETTER_AUTH_URL` is a committed var in `apps/web/wrangler.jsonc`, not a
+secret. Missing either secret makes Better Auth 500 every `/api/auth/*` route.
 
 All workers share one local state dir (`.wrangler/state`, via `--persist-to` /
 the web plugin's `persistState`) so they read/write the same D1 + R2 in dev.
