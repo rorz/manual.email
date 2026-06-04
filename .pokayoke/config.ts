@@ -31,6 +31,8 @@ export default defineConfig({
     reportUnused: "warn",
   },
   rules: {
+    "package/catalog": "error",
+    "package/workspace-protocol": ["error", { protocol: "workspace:*" }],
     "structure/max-file-lines": ["error", { max: 350 }],
     "typescript/enforce-arrow-function": "error",
   },

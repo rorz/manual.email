@@ -15,8 +15,9 @@ contracts live in `packages/*`. See `docs/architecture.md` for the full picture.
 - **Single source of truth.** Schema lives in `packages/db` (Drizzle); wire
   shapes live in `packages/contracts` (oRPC + `zod/mini`). Never hand-write SQL
   or duplicate a payload type in a worker — derive from these.
-- **The gate is law.** `bun run check` (Biome + typecheck + Knip + pokayoke,
-  350-line file ceiling) must stay green. Run it before declaring work done.
+- **The gate is law.** `bun run check` (Biome + typecheck + Knip + pokayoke:
+  350-line file ceiling, catalog dependency policy) must stay green. Run it
+  before declaring work done.
 - **Migrations are generated.** Edit `packages/db/src/schema.ts`, then
   `bun run db:generate`. Never hand-edit files under `packages/db/migrations`.
 - **Verify Workers behaviour live**, not just by typechecking — `wrangler dev`

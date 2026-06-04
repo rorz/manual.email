@@ -19,7 +19,7 @@ engagement metrics. This is the Bun monorepo behind it; see
 
 - **[Biome](https://biomejs.dev)** — formatter + linter (replaces ESLint/Prettier). Config: [`biome.jsonc`](biome.jsonc).
 - **[Knip](https://knip.dev)** — unused files / exports / dependencies, all issue types set to `error`. Config: [`knip.jsonc`](knip.jsonc).
-- **[pokayoke](https://www.npmjs.com/package/pokayoke)** — repo-specific policy checks in [`.pokayoke`](.pokayoke), including the 350-line file ceiling and arrow-function convention.
+- **[pokayoke](https://www.npmjs.com/package/pokayoke)** — repo-specific policy checks in [`.pokayoke`](.pokayoke), including the 350-line file ceiling, arrow-function convention, and catalog dependency policy.
 - **TypeScript** — a strict shared base in [`tsconfig.base.json`](tsconfig.base.json) (`exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noUnusedLocals`/`Parameters`, …).
 
 ## Storage

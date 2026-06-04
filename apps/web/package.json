@@ -16,10 +16,10 @@
     "@manual.email/contracts": "workspace:*",
     "@manual.email/db": "workspace:*",
     "@manual.email/ui": "workspace:*",
-    "@monaco-editor/react": "^4.7.0",
+    "@monaco-editor/react": "catalog:",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
-    "monaco-editor": "^0.55.1",
+    "monaco-editor": "catalog:",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
