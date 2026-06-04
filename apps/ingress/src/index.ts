@@ -16,7 +16,12 @@ import {
   type IngressMessage,
   inboundMessageSchema,
 } from "@manual.email/contracts";
-import { createDb, parseAddress } from "@manual.email/db";
+import {
+  createDb,
+  drainDeadLetters,
+  isDeadLetterQueue,
+  parseAddress,
+} from "@manual.email/db";
 import { idempotencyKey, isProcessed, markProcessed } from "./idempotency";
 import { resolveRecipient } from "./resolution";
 
@@ -46,6 +51,9 @@ export default {
 
   async queue(batch, env, _ctx): Promise<void> {
     const db = createDb(env.DB);
+    if (isDeadLetterQueue(batch.queue)) {
+      return drainDeadLetters(db, batch.queue, batch.messages);
+    }
     for (const message of batch.messages) {
       const { idempotencyKey: key, to } = message.body;
       if (await isProcessed(db, key)) {

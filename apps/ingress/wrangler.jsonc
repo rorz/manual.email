@@ -40,6 +40,11 @@
         "max_batch_timeout": 5,
         "max_retries": 3,
         "dead_letter_queue": "manual-email-ingress-dlq"
+      },
+      {
+        "queue": "manual-email-ingress-dlq",
+        "max_batch_size": 10,
+        "max_batch_timeout": 30
       }
     ]
   }

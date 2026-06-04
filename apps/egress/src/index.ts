@@ -6,9 +6,17 @@
  */
 
 import type { EgressMessage } from "@manual.email/contracts";
+import {
+  createDb,
+  drainDeadLetters,
+  isDeadLetterQueue,
+} from "@manual.email/db";
 
 export default {
   async queue(batch, env, _ctx): Promise<void> {
+    if (isDeadLetterQueue(batch.queue)) {
+      return drainDeadLetters(createDb(env.DB), batch.queue, batch.messages);
+    }
     for (const message of batch.messages) {
       // TODO: build a MIME message and send via env.SEND_EMAIL.
       void env.SEND_EMAIL;

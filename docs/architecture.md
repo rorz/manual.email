@@ -32,18 +32,27 @@ flowchart LR
   EGQ --> EG[egress worker] -->|SEND_EMAIL| OUT[outbound mail]
   INC <-->|idempotency + resolution| D1[(D1 manual-email)]
   IN -.raw MIME.-> R2[(R2 manual-email-messages)]
+  INC -.retries exhausted.-> DLQ[(*-dlq)]
+  DLQ -->|drain| D1
 ```
 
 Email Routing invokes `email()` **once per recipient**, so the same message can
 arrive several times with identical bytes. Each invocation enqueues, and the
 queue consumer is the single chokepoint that decides what is new.
 
+When a consumer exhausts its retries, the message is moved to that queue's
+dead-letter queue (`<queue>-dlq`). Each worker also consumes its own DLQ and
+drains it into the `dead_letters` table — so a code-path failure quarantines
+mail for inspection instead of dropping it. The DLQ path does trivial work
+(persist + ack), never the failing logic, and has no DLQ of its own.
+
 ## Storage
 
 - **D1 `manual-email`** — `accounts`, `addresses` (recipient → account
-  resolution), `messages`, and `processed_messages` (the idempotency ledger).
-  `apps/ingress` owns the migrations (`packages/db/migrations`); both workers
-  bind the database as `DB`.
+  resolution), `messages`, `processed_messages` (the idempotency ledger), and
+  `dead_letters` (failed messages drained from the DLQs). `apps/ingress` owns
+  the migrations (`packages/db/migrations`); both workers bind the database as
+  `DB`.
 - **R2 `manual-email-messages`** — raw MIME bodies, keyed via the helpers in
   `packages/db`. Metadata stays in D1.
 

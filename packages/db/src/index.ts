@@ -10,5 +10,6 @@
 
 export * from "./address";
 export * from "./client";
+export * from "./deadletter";
 export * from "./keys";
 export * from "./schema";

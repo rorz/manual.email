@@ -89,6 +89,19 @@ export const processedMessages = sqliteTable("processed_messages", {
   seenAt: integer("seen_at").notNull(),
 });
 
+/**
+ * Dead-letter store: messages a queue consumer failed to process after its
+ * retries were exhausted. Each worker drains its own DLQ into this table so a
+ * code-path failure quarantines mail for inspection / replay instead of
+ * silently dropping it. `body` is the JSON queue payload.
+ */
+export const deadLetters = sqliteTable("dead_letters", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  queue: text("queue").notNull(),
+  body: text("body").notNull(),
+  failedAt: integer("failed_at").notNull(),
+});
+
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 
@@ -97,6 +110,9 @@ export type NewAddress = typeof addresses.$inferInsert;
 
 export type Message = typeof messages.$inferSelect;
 export type NewMessage = typeof messages.$inferInsert;
+
+export type DeadLetter = typeof deadLetters.$inferSelect;
+export type NewDeadLetter = typeof deadLetters.$inferInsert;
 
 /** Direction of a stored message relative to the platform. */
 export type MailDirection = Message["direction"];
