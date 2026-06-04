@@ -48,6 +48,9 @@ execFileSync(
     "execute",
     "manual-email",
     remote ? "--remote" : "--local",
+    // Local state is shared across Workers at the repo root so a seeded mailbox
+    // is visible to ingress delivery and the web app's inbox alike.
+    ...(remote ? [] : ["--persist-to", "../../.wrangler/state"]),
     "--command",
     statements.join(" "),
   ],

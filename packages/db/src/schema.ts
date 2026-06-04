@@ -14,6 +14,10 @@
 import { sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
+// BetterAuth's core tables live alongside the mail core in the same D1, so
+// drizzle-kit (which reads only this file) emits one migration set for both.
+export * from "./auth-schema";
+
 const createdAt = () =>
   integer("created_at").notNull().default(sql`(unixepoch() * 1000)`);
 

@@ -60,11 +60,14 @@ In rough dependency order:
    (`bun run --filter @manual.email/ingress seed -- [--name <n>] [--remote] <addr>…`)
    canonicalises via `parseAddress` and writes an account + its address(es), so
    recipients resolve. Producer: `apps/web` is now a vinext Worker
-   (`wrangler.jsonc` + `vite.config.ts` with `@cloudflare/vite-plugin`); its
-   `POST /api/send` route validates with `outboundMessageSchema` and produces to
-   the `EGRESS_QUEUE` binding via `import { env } from "cloudflare:workers"`.
-7. **web UI.** Read mailbox from D1/R2; build the compose UI on top of the
-   existing `POST /api/send` producer route.
+   (`wrangler.jsonc` + `vite.config.ts` with `@cloudflare/vite-plugin`) that
+   produces to the `EGRESS_QUEUE` binding via `import { env } from "cloudflare:workers"`.
+7. ✅ **web UI.** BetterAuth email+password sign-in on the shared D1 (Drizzle
+   adapter; tables in `packages/db`). A `/` splash + protected `/inbox`
+   (list-from-D1 + compose). Every mutation is a **server action** — no API
+   routes. Sign-up auto-provisions the mailbox (`accounts` + primary `addresses`)
+   from the user's email and compose derives `from` from the session. Skeleton
+   only; styling is owned downstream.
 
 ## Missing — provisioning / config
 
@@ -92,9 +95,8 @@ In rough dependency order:
   replace the manual `apps/ingress/test` smoke loop.
 - egress secrets/config posture once a real sender domain exists.
 - Pin the Bun version (`.bun-version` / `engines`).
-- **Compose-route hardening before public launch:** require auth and derive
-  `from` server-side from the authenticated account (the route currently trusts
-  the client `from` — fine while non-public, an open relay if shipped as-is);
+- **Compose hardening before public launch:** auth + server-derived `from` are
+  done (compose requires a session and ignores any client `from`). Still open:
   add size caps to `outboundMessageSchema` (`subject`/`text`/`html`) aligned to
   Queues/Email Service limits; add outbound idempotency so an at-least-once
   egress retry can't double-send.

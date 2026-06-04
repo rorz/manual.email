@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --port 10140 --inspector-port 10141",
+    "dev": "wrangler dev --port 10140 --inspector-port 10141 --persist-to ../../.wrangler/state",
     "deploy": "wrangler deploy",
-    "start": "wrangler dev --port 10140 --inspector-port 10141",
+    "start": "wrangler dev --port 10140 --inspector-port 10141 --persist-to ../../.wrangler/state",
     "cf-typegen": "wrangler types",
     "typecheck": "tsc --noEmit"
   },

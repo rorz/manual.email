@@ -15,7 +15,7 @@ query.
 
 | Workspace | Role |
 | --- | --- |
-| `apps/web` | Next.js 16 UI, served on Cloudflare via vinext (Vite). Its compose route validates outbound mail and produces to `EGRESS_QUEUE`. |
+| `apps/web` | Next.js 16 UI, served on Cloudflare via vinext (Vite). BetterAuth email+password sign-in; every mutation is a server action (no API routes). Compose validates outbound mail and produces to `EGRESS_QUEUE`. |
 | `apps/ingress` | Receives mail (Email Routing `email()`), enqueues it, then consumes the ingress queue: idempotency → recipient resolution → route. |
 | `apps/egress` | Consumes the egress queue and sends outbound mail through Cloudflare Email Service (`SEND_EMAIL` binding). |
 | `packages/db` | Drizzle schema (single source of truth), the typed `createDb` client, R2 key helpers, and address parsing. |
@@ -63,14 +63,15 @@ mail for inspection instead of dropping it. The DLQ path does trivial work
 
 ## Storage
 
-- **D1 `manual-email`** — `accounts`, `addresses` (recipient → account
-  resolution), `messages`, `processed_messages` (the idempotency ledger), and
-  `dead_letters` (failed messages drained from the DLQs). `apps/ingress` owns
-  the migrations (`packages/db/migrations`); both workers bind the database as
-  `DB`. Accounts and their addresses are provisioned with
-  `apps/ingress/scripts/seed.ts` (`bun run --filter @manual.email/ingress seed`),
-  a stop-gap registration path that canonicalises each address through the same
-  `parseAddress` used by resolution until the web app owns sign-up.
+- **D1 `manual-email`** — the mail tables (`accounts`, `addresses` for recipient
+  → account resolution, `messages`, `processed_messages` idempotency ledger,
+  `dead_letters`) plus BetterAuth's `user`/`session`/`account`/`verification`
+  tables (web auth). `apps/ingress` owns the migrations
+  (`packages/db/migrations`); all three workers bind the database as `DB`.
+  Sign-up is owned by the web app (see below); `apps/ingress/scripts/seed.ts`
+  (`bun run --filter @manual.email/ingress seed`) remains for provisioning
+  accounts/addresses out-of-band, canonicalising through the same `parseAddress`
+  used by resolution.
 - **R2 `manual-email-messages`** — raw MIME bodies, keyed via the helpers in
   `packages/db`: `messages/<accountId>/<messageId>.eml` for a delivered message,
   `unresolved/<messageId>.eml` when the recipient didn't resolve. Metadata stays
@@ -82,9 +83,24 @@ mail for inspection instead of dropping it. The DLQ path does trivial work
 **types** (erased at build time), so trusted internal queue messages carry no
 runtime cost. The exceptions are the two trust boundaries where untrusted data
 enters: `ingress.email()` parses the constructed payload with
-`inboundMessageSchema` before enqueuing, and the web compose route validates the
-user-supplied body with `outboundMessageSchema` before producing to
-`EGRESS_QUEUE`. Schemas use `zod/mini` to keep those bundled validators small.
+`inboundMessageSchema` before enqueuing, and the web compose **server action**
+validates the user-supplied body with `composeRequestSchema` (deriving `from`
+from the authenticated session, not the client) before mapping it onto
+`outboundMessageSchema` and producing to `EGRESS_QUEUE`. Schemas use `zod/mini`
+to keep those bundled validators small.
+
+## Web app & auth
+
+`apps/web` authenticates with **BetterAuth** (email + password) over the shared
+D1 via the Drizzle adapter; its four tables live in `packages/db` next to the
+mail schema. Every mutation — sign-in/up/out and compose — is a **Next.js server
+action**, so there are no API routes (the `nextCookies()` plugin lets actions set
+the session cookie). Sign-up auto-provisions the user's mailbox: a
+`databaseHooks.user.create.after` hook resolves the new user's email into an
+`accounts` row + primary `addresses` row through `parseAddress`. That resolution
+is idempotent and is re-run lazily by `/inbox` and compose, keeping auth identity
+and mail identity one-to-one. Because compose derives `from` from the session,
+the web app is not an open relay.
 
 ## Idempotency & resolution
 
@@ -117,3 +133,10 @@ user-supplied body with `outboundMessageSchema` before producing to
   `db:migrate:local` / `db:migrate` to apply.
 - Local inbound test: `apps/ingress/test/send.sh` POSTs to
   `/cdn-cgi/handler/email` (see Email Routing local-dev docs).
+
+All workers share one local state dir (`.wrangler/state`, via `--persist-to` /
+the web plugin's `persistState`) so they read/write the same D1 + R2 in dev.
+Local Queues do **not** cross separate dev processes, so a web→egress send is
+only exercisable up to the enqueue locally; inbound→inbox is fully local (ingress
+is producer and consumer in one process). The root `kysely` override pins a
+dual-ESM/CJS build so vinext's dep optimizer can boot BetterAuth.

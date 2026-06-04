@@ -38,5 +38,18 @@ export const outboundMessageSchema = z.object({
   html: z.optional(z.string()),
 });
 
+/**
+ * A user-composed message from the web client. `from` is intentionally absent —
+ * it's derived server-side from the authenticated session so the compose
+ * endpoint can't be used as an open relay. The route adds `from` and validates
+ * the result with `outboundMessageSchema` before enqueuing.
+ */
+export const composeRequestSchema = z.object({
+  to: z.email(),
+  subject: z.string().check(z.regex(/^[^\r\n]*$/)),
+  text: z.string(),
+  html: z.optional(z.string()),
+});
+
 /** Generic acknowledgement. */
 export const ackSchema = z.object({ ok: z.boolean() });
