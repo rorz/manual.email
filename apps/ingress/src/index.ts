@@ -24,7 +24,7 @@ import {
   parseAddress,
   unresolvedBodyKey,
 } from "@manual.email/db";
-import { deliver } from "./delivery";
+import { filterMessage } from "./filter";
 import {
   deriveId,
   idempotencyKey,
@@ -32,6 +32,8 @@ import {
   markProcessed,
 } from "./idempotency";
 import { resolveRecipient } from "./resolution";
+
+export { Sandbox } from "@cloudflare/sandbox";
 
 const canonical = (address: string): string =>
   parseAddress(address)?.canonical ?? address.trim().toLowerCase();
@@ -89,7 +91,7 @@ export default {
 
       const accountId = await resolveRecipient(db, body.to);
       if (accountId) {
-        await deliver(db, accountId, body);
+        await filterMessage(env, db, accountId, body);
       } else {
         // Unresolved recipient — the raw body is parked under `unresolved/`.
         // Bouncing / forward rules are intentionally out of scope; egress is the

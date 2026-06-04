@@ -12,6 +12,7 @@
     "catalog": {
       "@better-auth/infra": "0.2.11",
       "@biomejs/biome": "2.4.16",
+      "@cloudflare/sandbox": "0.11.0",
       "@cloudflare/vite-plugin": "1.39.2",
       "@orpc/contract": "1.14.4",
       "@tailwindcss/postcss": "4.3.0",
@@ -26,6 +27,7 @@
       "drizzle-orm": "0.45.2",
       "knip": "6.15.0",
       "next": "16.2.7",
+      "postal-mime": "2.7.4",
       "react": "19.2.7",
       "react-dom": "19.2.7",
       "react-server-dom-webpack": "19.2.7",

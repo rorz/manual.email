@@ -29,6 +29,13 @@
       "when": 1780567711458,
       "tag": "0003_jittery_scalphunter",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1780593248374,
+      "tag": "0004_fresh_eternals",
+      "breakpoints": true
     }
   ]
 }

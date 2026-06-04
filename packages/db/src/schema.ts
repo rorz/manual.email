@@ -12,7 +12,14 @@
  */
 
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 // BetterAuth's core tables live alongside the mail core in the same D1, so
 // drizzle-kit (which reads only this file) emits one migration set for both.
@@ -106,6 +113,117 @@ export const deadLetters = sqliteTable("dead_letters", {
   failedAt: integer("failed_at").notNull(),
 });
 
+/**
+ * Filtering organisation. Inbound mail is filtered once at ingest (one Sandbox
+ * program invocation per message); the verdict assigns `tags`, and `trays` are
+ * saved views over one or more tags.
+ */
+
+/** A user label. Many tags per message; `slug` is what filter programs emit,
+ *  `label`/`color`/`position` are display metadata the UI owns. */
+export const tags = sqliteTable(
+  "tags",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    slug: text("slug").notNull(),
+    label: text("label").notNull(),
+    color: text("color"),
+    position: integer("position").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("uniq_tags_account_slug").on(t.accountId, t.slug)],
+);
+
+/** Message ↔ tag (the verdict's `tags`). A message can carry many tags. */
+export const messageTags = sqliteTable(
+  "message_tags",
+  {
+    messageId: text("message_id")
+      .notNull()
+      .references(() => messages.id, { onDelete: "cascade" }),
+    tagId: text("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.messageId, t.tagId] }),
+    index("idx_message_tags_tag").on(t.tagId),
+  ],
+);
+
+/**
+ * A saved view. `everything` (all passed mail) and `quarantine` (all rejected
+ * mail) always exist and aren't tag-backed; `tag` trays show mail carrying any
+ * of their `trayTags`.
+ */
+export const trays = sqliteTable(
+  "trays",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id")
+      .notNull()
+      .references(() => accounts.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    kind: text("kind", {
+      enum: ["everything", "quarantine", "tag"],
+    })
+      .notNull()
+      .default("tag"),
+    position: integer("position").notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (t) => [index("idx_trays_account").on(t.accountId)],
+);
+
+/** Tray ↔ tag: a `tag` tray is the union of mail carrying any listed tag. */
+export const trayTags = sqliteTable(
+  "tray_tags",
+  {
+    trayId: text("tray_id")
+      .notNull()
+      .references(() => trays.id, { onDelete: "cascade" }),
+    tagId: text("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.trayId, t.tagId] })],
+);
+
+/**
+ * The filtering verdict for an inbound message (1:1). `reject` (or a malformed
+ * program output, coerced fail-closed) routes the message to Quarantine;
+ * `category`/`reason` are only set for rejects.
+ */
+export const messageVerdicts = sqliteTable("message_verdicts", {
+  messageId: text("message_id")
+    .primaryKey()
+    .references(() => messages.id, { onDelete: "cascade" }),
+  disposition: text("disposition", { enum: ["pass", "reject"] }).notNull(),
+  category: text("category", { enum: ["spam", "phishing", "other"] }),
+  reason: text("reason"),
+  createdAt: createdAt(),
+});
+
+/**
+ * Per-account filtering configuration. `managed` feeds `systemPrompt` into the
+ * built-in program; `custom` runs the user's `customSource` (`main.ts` default
+ * export) — which must pass the system tests before it can be saved.
+ */
+export const filterConfigs = sqliteTable("filter_configs", {
+  accountId: text("account_id")
+    .primaryKey()
+    .references(() => accounts.id, { onDelete: "cascade" }),
+  mode: text("mode", { enum: ["managed", "custom"] })
+    .notNull()
+    .default("managed"),
+  systemPrompt: text("system_prompt").notNull().default(""),
+  customSource: text("custom_source"),
+  updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
+});
+
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 
@@ -117,6 +235,30 @@ export type NewMessage = typeof messages.$inferInsert;
 
 export type DeadLetter = typeof deadLetters.$inferSelect;
 export type NewDeadLetter = typeof deadLetters.$inferInsert;
+
+export type Tag = typeof tags.$inferSelect;
+export type NewTag = typeof tags.$inferInsert;
+
+export type MessageTag = typeof messageTags.$inferSelect;
+export type NewMessageTag = typeof messageTags.$inferInsert;
+
+export type Tray = typeof trays.$inferSelect;
+export type NewTray = typeof trays.$inferInsert;
+
+export type TrayTag = typeof trayTags.$inferSelect;
+export type NewTrayTag = typeof trayTags.$inferInsert;
+
+export type MessageVerdict = typeof messageVerdicts.$inferSelect;
+export type NewMessageVerdict = typeof messageVerdicts.$inferInsert;
+
+export type FilterConfig = typeof filterConfigs.$inferSelect;
+export type NewFilterConfig = typeof filterConfigs.$inferInsert;
+
+/** Kind of saved view a tray represents. */
+export type TrayKind = Tray["kind"];
+
+/** Filtering mode an account runs. */
+export type FilterMode = FilterConfig["mode"];
 
 /** Direction of a stored message relative to the platform. */
 export type MailDirection = Message["direction"];

@@ -16,8 +16,10 @@
     "wrangler": "catalog:"
   },
   "dependencies": {
+    "@cloudflare/sandbox": "catalog:",
     "@manual.email/contracts": "workspace:*",
     "@manual.email/db": "workspace:*",
-    "drizzle-orm": "catalog:"
+    "drizzle-orm": "catalog:",
+    "postal-mime": "catalog:"
   }
 }

@@ -8,6 +8,7 @@ import {
   parseAddress,
 } from "@manual.email/db";
 import { desc, eq } from "drizzle-orm";
+import { seedAccountDefaults } from "./defaults";
 
 /**
  * Mailbox provisioning + lookup for the web app.
@@ -61,7 +62,10 @@ export async function resolveMailbox(email: string): Promise<Mailbox | null> {
 
   // Re-read so a concurrent sign-up that won the insert race still resolves.
   const winner = await lookup(d, canonical);
-  return winner ? { accountId: winner, address: canonical } : null;
+  if (!winner) return null;
+  // Seed the winning account's default trays/tags/filter config (idempotent).
+  await seedAccountDefaults(d, winner);
+  return { accountId: winner, address: canonical };
 }
 
 /** A mailbox's messages, newest first. */

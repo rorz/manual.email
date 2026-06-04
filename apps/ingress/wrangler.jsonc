@@ -20,6 +20,23 @@
       "bucket_name": "manual-email-messages"
     }
   ],
+  // The Sandbox runs each inbound message's filter program (managed or custom)
+  // in an isolated bun container. Managed and custom runs use distinct sandbox
+  // ids so a custom program never shares a container with a key-bearing managed
+  // run. GEMINI_FLASH_LITE is a secret (`wrangler secret put`); locally it comes
+  // from `.dev.vars`.
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "./Dockerfile",
+      "instance_type": "lite",
+      "max_instances": 5
+    }
+  ],
+  "durable_objects": {
+    "bindings": [{ "class_name": "Sandbox", "name": "Sandbox" }]
+  },
+  "migrations": [{ "new_sqlite_classes": ["Sandbox"], "tag": "v1" }],
   "routes": [
     {
       "custom_domain": true,
