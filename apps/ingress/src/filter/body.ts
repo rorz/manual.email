@@ -1,21 +1,30 @@
 /**
- * Extract the plain-text body a filter program sees from raw RFC822 bytes.
+ * Extract the body parts a filter program sees from raw RFC822 bytes.
  *
  * `postal-mime` decodes the MIME tree; we prefer the text part and fall back to
- * a crude tag-strip of the HTML part. The result is capped so a large mail (or
- * an attachment-laden one) can't blow up the LLM payload, cost, or latency —
- * the classifier only needs the gist.
+ * a crude tag-strip of the HTML part for `body`, while preserving the decoded
+ * HTML part when present. Each part is capped so a large mail (or an
+ * attachment-laden one) can't blow up the LLM payload, cost, or latency.
  */
 
 import PostalMime from "postal-mime";
 
-/** Upper bound on body characters handed to a program. */
-const MAX_BODY_CHARS = 16_000;
+interface ExtractedBodies {
+  body: string;
+  html: string | null;
+}
 
-export const extractText = async (raw: ArrayBuffer): Promise<string> => {
+/** Upper bounds on body characters handed to a program. */
+const MAX_TEXT_CHARS = 16_000;
+const MAX_HTML_CHARS = 32_000;
+
+export const extractBodies = async (
+  raw: ArrayBuffer,
+): Promise<ExtractedBodies> => {
   const email = await PostalMime.parse(raw);
-  const text = email.text ?? (email.html ? stripHtml(email.html) : "");
-  return text.slice(0, MAX_BODY_CHARS);
+  const body = email.text ?? (email.html ? stripHtml(email.html) : "");
+  const html = email.html ? email.html.slice(0, MAX_HTML_CHARS) : null;
+  return { body: body.slice(0, MAX_TEXT_CHARS), html };
 };
 
 const stripHtml = (html: string): string =>

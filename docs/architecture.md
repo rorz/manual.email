@@ -7,9 +7,9 @@ silently dropped, so the system is small, legible, and unsurprising.
 
 It is a Bun monorepo. Inbound and outbound mail run on Cloudflare Email Service
 — ingress receives via Email Routing, egress sends via Email Sending — handled
-by two single-purpose Workers decoupled by Cloudflare Queues. Shared schema and
-wire contracts live in `packages/*` so the workers never duplicate a type or a
-query.
+by two single-purpose Workers decoupled by Cloudflare Queues. Shared schema,
+wire contracts, and UI primitives live in `packages/*` so apps never duplicate
+types, query shapes, or baseline interface chrome.
 
 ## Topology
 
@@ -20,6 +20,7 @@ query.
 | `apps/egress` | Consumes the egress queue and sends outbound mail through Cloudflare Email Service (`SEND_EMAIL` binding). |
 | `packages/db` | Drizzle schema (single source of truth), the typed `createDb` client, R2 key helpers, and address parsing. |
 | `packages/contracts` | oRPC + `zod/mini` queue-payload contracts. The contract is the source of truth; worker message types are inferred from it. |
+| `packages/ui` | Shared React primitives for the web app: class composition, cva variants, buttons, inputs, panels, notices, chips, and page chrome. Tailwind stays utility-first and intentionally basic. |
 | `appraise` | Bun/TS guardrail enforcing the 350-line file ceiling. |
 
 ## Data flow
@@ -130,23 +131,30 @@ compose derives `from` from the session, the web app is not an open relay.
 ## Filtering
 
 Between resolution and delivery the consumer runs the account's **filter
-program** over `{ subject, sender, body }` (body = plain text extracted from the
-R2 MIME) and stores a 1:1 verdict. A `pass` carries `tags`; a `reject` carries a
-`category` (`spam`/`phishing`/`other`) + `reason`. **Quarantine is derived, not
-a folder** — rejected mail still gets a `messages` row, surfaced in the
-Quarantine tray. Tags and trays are the organising primitives: a tray is a saved
-view over one or more tags, except the always-present `everything` (passed mail)
-and `quarantine` (rejected mail) views. Sign-up seeds the reserved
-`important`/`unimportant` tags, their trays, and a managed config.
+program** over `{ subject, sender, body, html }` (`body` = plain text extracted
+from the R2 MIME, `html` = decoded HTML body when present) and stores a 1:1
+verdict. A `pass` carries `tags`; a `reject` carries a `category`
+(`spam`/`phishing`/`other`) + `reason`. **Quarantine is derived, not a folder**
+— rejected mail still gets a `messages` row, surfaced in the Quarantine tray.
+Tags and trays are the organising primitives: a tray is a saved view over one or
+more tags, except the always-present `everything` (passed mail) and `quarantine`
+(rejected mail) views. Editable tag trays also carry their display color and
+Phosphor icon name. Sign-up seeds the reserved `important`/`unimportant` tags,
+their trays, and a managed config.
 
-Every message runs in a **Cloudflare Sandbox** (`bun`, internet access). One
-harness drives both modes: the managed source or the user's custom `main.ts`
-default export is written into a fresh dir with the input, run, and the verdict
-read back from a file. **Managed** runs receive `GEMINI_FLASH_LITE` — the
-built-in program classifies via Gemini Flash Lite, steered by a user-editable
-system prompt; **custom** runs get no first-party secrets and a different sandbox
-id, so a custom program can never share a container with a key-bearing managed
-run.
+Every message runs in a **Cloudflare Sandbox** (`bun`, internet access, with
+`ai`, `@ai-sdk/google`, and `zod` preinstalled). One harness drives both modes:
+it writes the shared `filter-contract.ts`, the managed source or the user's
+custom `main.ts` default export, the input, and the runner into a fresh dir. The
+runner validates input and verdicts at the same boundary custom programs can
+import as `FilterProgram`. **Managed** runs receive `GEMINI_FLASH_LITE` — the
+built-in program classifies via AI SDK structured output on
+`gemini-flash-lite-latest`, steered by two editable prompts: `safety_prompt`
+for pass/reject policy and `tag_prompt` for Important/Unimportant tagging. The
+product should recommend editing `tag_prompt`; changing `safety_prompt` changes
+the sender-facing rejection contract. **Custom** runs get no first-party secrets
+and a different sandbox id, so a custom program can never share a container with
+a key-bearing managed run.
 
 The failure policy is mode-aware so an outage never mass-quarantines real mail: a
 valid verdict is used as-is; a **custom** non-verdict fails closed to Quarantine

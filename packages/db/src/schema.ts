@@ -167,6 +167,8 @@ export const trays = sqliteTable(
       .notNull()
       .references(() => accounts.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    color: text("color"),
+    icon: text("icon"),
     kind: text("kind", {
       enum: ["everything", "quarantine", "tag"],
     })
@@ -208,9 +210,10 @@ export const messageVerdicts = sqliteTable("message_verdicts", {
 });
 
 /**
- * Per-account filtering configuration. `managed` feeds `systemPrompt` into the
- * built-in program; `custom` runs the user's `customSource` (`main.ts` default
- * export) — which must pass the system tests before it can be saved.
+ * Per-account filtering configuration. `managed` feeds `safetyPrompt` and
+ * `tagPrompt` into the built-in program; `custom` runs the user's
+ * `customSource` (`main.ts` default export) — which must pass the system tests
+ * before it can be saved.
  */
 export const filterConfigs = sqliteTable("filter_configs", {
   accountId: text("account_id")
@@ -219,7 +222,8 @@ export const filterConfigs = sqliteTable("filter_configs", {
   mode: text("mode", { enum: ["managed", "custom"] })
     .notNull()
     .default("managed"),
-  systemPrompt: text("system_prompt").notNull().default(""),
+  safetyPrompt: text("safety_prompt").notNull().default(""),
+  tagPrompt: text("tag_prompt").notNull().default(""),
   customSource: text("custom_source"),
   updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
 });

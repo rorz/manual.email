@@ -9,7 +9,11 @@
  * `onConflictDoNothing`, so a retried message converges instead of erroring.
  */
 
-import type { FilterVerdict } from "@manual.email/contracts";
+import {
+  DEFAULT_SAFETY_PROMPT,
+  DEFAULT_TAG_PROMPT,
+  type FilterVerdict,
+} from "@manual.email/contracts";
 import {
   type Db,
   filterConfigs,
@@ -22,7 +26,8 @@ import type { FilterProgram } from "./executor";
 
 const DEFAULT_PROGRAM: FilterProgram = {
   mode: "managed",
-  systemPrompt: "",
+  safetyPrompt: DEFAULT_SAFETY_PROMPT,
+  tagPrompt: DEFAULT_TAG_PROMPT,
   customSource: null,
 };
 
@@ -34,13 +39,20 @@ export const loadFilterConfig = async (
   const row = await db
     .select({
       mode: filterConfigs.mode,
-      systemPrompt: filterConfigs.systemPrompt,
+      safetyPrompt: filterConfigs.safetyPrompt,
+      tagPrompt: filterConfigs.tagPrompt,
       customSource: filterConfigs.customSource,
     })
     .from(filterConfigs)
     .where(eq(filterConfigs.accountId, accountId))
     .get();
-  return row ?? DEFAULT_PROGRAM;
+  if (!row) return DEFAULT_PROGRAM;
+  return {
+    mode: row.mode,
+    safetyPrompt: row.safetyPrompt.trim() || DEFAULT_SAFETY_PROMPT,
+    tagPrompt: row.tagPrompt.trim() || DEFAULT_TAG_PROMPT,
+    customSource: row.customSource,
+  };
 };
 
 /** Whether a verdict already exists for this message (skip re-filtering). */

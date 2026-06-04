@@ -12,11 +12,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@better-auth/infra": "catalog:",
     "@manual.email/contracts": "workspace:*",
     "@manual.email/db": "workspace:*",
-    "@better-auth/infra": "catalog:",
+    "@manual.email/ui": "workspace:*",
+    "@monaco-editor/react": "^4.7.0",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
+    "monaco-editor": "^0.55.1",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"

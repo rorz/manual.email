@@ -16,10 +16,13 @@
     "wrangler": "catalog:"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.80",
     "@cloudflare/sandbox": "catalog:",
     "@manual.email/contracts": "workspace:*",
     "@manual.email/db": "workspace:*",
+    "ai": "^6.0.196",
     "drizzle-orm": "catalog:",
-    "postal-mime": "catalog:"
+    "postal-mime": "catalog:",
+    "zod": "^4.4.3"
   }
 }

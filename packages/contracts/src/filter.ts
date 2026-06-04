@@ -9,11 +9,13 @@
 import { z } from "zod/mini";
 
 /** The single inbound message a filtering program decides on. `body` is the
- *  plain-text part extracted from the MIME; `sender` is the envelope from. */
+ *  plain-text part extracted from the MIME; `html` is the decoded HTML part
+ *  when the MIME includes one; `sender` is the envelope from. */
 export const filterInputSchema = z.object({
   subject: z.nullable(z.string()),
   sender: z.email(),
   body: z.string(),
+  html: z.nullable(z.string()),
 });
 
 /** Upper bound on tags a single verdict may apply — caps untrusted programs. */
@@ -51,6 +53,18 @@ export const filterVerdictSchema = z.discriminatedUnion("disposition", [
 export type FilterInput = z.infer<typeof filterInputSchema>;
 export type FilterVerdict = z.infer<typeof filterVerdictSchema>;
 export type RejectCategory = z.infer<typeof rejectVerdictSchema>["category"];
+
+/** Default managed-program safety policy. Editable, but treated as the
+ *  sender-facing pass/reject contract and therefore not the casual tweak point. */
+export const DEFAULT_SAFETY_PROMPT =
+  "Pass legitimate mail. Reject unsolicited bulk mail as spam and credential " +
+  "or payment fraud as phishing. When uncertain, pass the message through.";
+
+/** Default managed-program tagging policy. This is the recommended user-editable
+ *  prompt for personalising Important vs Unimportant. */
+export const DEFAULT_TAG_PROMPT =
+  "Tag genuinely time-sensitive or personally relevant mail as `important`; " +
+  "tag routine newsletters, receipts, and notifications as `unimportant`.";
 
 /** Reserved tag slugs the managed program emits and the default trays filter on.
  *  Users may delete the trays, but the slugs stay stable across accounts. */

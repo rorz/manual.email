@@ -36,6 +36,20 @@
       "when": 1780593248374,
       "tag": "0004_fresh_eternals",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1780597731035,
+      "tag": "0005_fearless_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1780598491276,
+      "tag": "0006_pretty_cargill",
+      "breakpoints": true
     }
   ]
 }

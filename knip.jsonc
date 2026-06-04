@@ -1,6 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
+    "apps/ingress": {
+      "entry": ["test/**/*.ts"],
+      // Loaded by filter programs inside the Sandbox container from embedded
+      // source strings, so Knip can't discover them from static Worker imports.
+      "ignoreDependencies": ["@ai-sdk/google", "ai", "zod"]
+    },
     "apps/web": {
       // `cloudflare:workers` is a workerd-provided virtual module (like
       // `node:*`), not an npm package — keep knip from flagging it.

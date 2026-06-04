@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../../../packages/ui/src";
 
 /*
  * Tailwind v4 — `@import "tailwindcss"` pulls in Preflight (the cross-browser

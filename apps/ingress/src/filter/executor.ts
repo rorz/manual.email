@@ -18,12 +18,13 @@
 import { getSandbox } from "@cloudflare/sandbox";
 import type { FilterInput } from "@manual.email/contracts";
 import type { FilterMode } from "@manual.email/db";
-import { MANAGED_PROGRAM, RUNNER } from "./program";
+import { FILTER_CONTRACT, MANAGED_PROGRAM, RUNNER } from "./program";
 
 /** The program to run, resolved from an account's `filter_configs` row. */
 export interface FilterProgram {
   mode: FilterMode;
-  systemPrompt: string;
+  safetyPrompt: string;
+  tagPrompt: string;
   customSource: string | null;
 }
 
@@ -43,17 +44,20 @@ export const runFilter = async (
     program.mode === "custom" ? (program.customSource ?? "") : MANAGED_PROGRAM;
 
   await sandbox.mkdir(dir, { recursive: true });
+  await sandbox.writeFile(`${dir}/filter-contract.ts`, FILTER_CONTRACT);
   await sandbox.writeFile(`${dir}/main.ts`, main);
   await sandbox.writeFile(`${dir}/run.ts`, RUNNER);
   await sandbox.writeFile(`${dir}/input.json`, JSON.stringify(input));
 
   const env: Record<string, string> = {
+    FILTER_ERROR: `${dir}/error.txt`,
     FILTER_INPUT: `${dir}/input.json`,
     FILTER_OUTPUT: `${dir}/verdict.json`,
   };
   if (program.mode === "managed") {
     env["GEMINI_FLASH_LITE"] = geminiKey;
-    env["SYSTEM_PROMPT"] = program.systemPrompt;
+    env["SAFETY_PROMPT"] = program.safetyPrompt;
+    env["TAG_PROMPT"] = program.tagPrompt;
   }
 
   await sandbox.exec(`bun ${dir}/run.ts`, { env, timeout: TIMEOUT_MS });

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Input, Textarea } from "@manual.email/ui";
 import { useActionState } from "react";
 import { type SendState, sendMessage } from "../actions";
 
@@ -15,29 +16,16 @@ export const Compose = () => {
 
   return (
     <form className="flex flex-col items-start gap-2" action={action}>
-      <input
-        className="w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
-        name="to"
-        type="email"
-        placeholder="To"
-      />
-      <input
-        className="w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
-        name="subject"
-        placeholder="Subject"
-      />
-      <textarea
-        className="min-h-28 w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
+      <Input className="max-w-sm" name="to" type="email" placeholder="To" />
+      <Input className="max-w-sm" name="subject" placeholder="Subject" />
+      <Textarea
+        className="min-h-28 max-w-sm"
         name="text"
         placeholder="Message"
       />
-      <button
-        className="rounded border border-neutral-300 px-4 py-2 disabled:opacity-50"
-        type="submit"
-        disabled={pending}
-      >
+      <Button type="submit" disabled={pending}>
         Send
-      </button>
+      </Button>
       {state.status && <p>{state.status}</p>}
     </form>
   );

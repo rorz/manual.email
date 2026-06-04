@@ -6,10 +6,17 @@ import {
   outboundMessageSchema,
 } from "@manual.email/contracts";
 import { APIError } from "better-auth/api";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuth } from "@/lib/auth";
-import { resolveMailbox } from "@/lib/mailbox";
+import { saveCustomFilter, saveManagedFilter } from "@/lib/filter-preferences";
+import {
+  createTray,
+  deleteTray,
+  resolveMailbox,
+  updateTray,
+} from "@/lib/mailbox";
 
 /**
  * Server actions — the only way the web app mutates auth/mail state. There are
@@ -86,14 +93,22 @@ export interface SendState {
   status?: string;
 }
 
+const currentMailbox = async () => {
+  const session = await getAuth().api.getSession({ headers: await headers() });
+  if (!session) return null;
+  return resolveMailbox(session.user.email);
+};
+
+const trayAppearance = (form: FormData) => ({
+  color: String(form.get("color") ?? ""),
+  icon: String(form.get("icon") ?? ""),
+});
+
 /** Validate a composed message and enqueue it to egress (from = session). */
 export const sendMessage = async (
   _prev: SendState,
   form: FormData,
 ): Promise<SendState> => {
-  const session = await getAuth().api.getSession({ headers: await headers() });
-  if (!session) return { status: "Not signed in" };
-
   const parsed = composeRequestSchema.safeParse({
     to: form.get("to"),
     subject: form.get("subject"),
@@ -101,7 +116,7 @@ export const sendMessage = async (
   });
   if (!parsed.success) return { status: "Invalid message" };
 
-  const mailbox = await resolveMailbox(session.user.email);
+  const mailbox = await currentMailbox();
   if (!mailbox) return { status: "No mailbox" };
 
   const { to, subject, text, html } = parsed.data;
@@ -115,4 +130,64 @@ export const sendMessage = async (
 
   await env.EGRESS_QUEUE.send(outbound);
   return { status: "Queued" };
+};
+
+export const createTrayAction = async (form: FormData): Promise<void> => {
+  const mailbox = await currentMailbox();
+  if (!mailbox) return;
+  await createTray(
+    mailbox.accountId,
+    String(form.get("name") ?? ""),
+    form.getAll("tagId").map(String),
+    trayAppearance(form),
+  );
+  revalidatePath("/inbox");
+  revalidatePath("/preferences");
+};
+
+export const updateTrayAction = async (form: FormData): Promise<void> => {
+  const mailbox = await currentMailbox();
+  if (!mailbox) return;
+  await updateTray(
+    mailbox.accountId,
+    String(form.get("trayId") ?? ""),
+    String(form.get("name") ?? ""),
+    form.getAll("tagId").map(String),
+    trayAppearance(form),
+  );
+  revalidatePath("/inbox");
+  revalidatePath("/preferences");
+};
+
+export const deleteTrayAction = async (form: FormData): Promise<void> => {
+  const mailbox = await currentMailbox();
+  if (!mailbox) return;
+  await deleteTray(mailbox.accountId, String(form.get("trayId") ?? ""));
+  revalidatePath("/inbox");
+  revalidatePath("/preferences");
+};
+
+export const updateManagedFilterAction = async (
+  form: FormData,
+): Promise<void> => {
+  const mailbox = await currentMailbox();
+  if (!mailbox) return;
+  await saveManagedFilter(
+    mailbox.accountId,
+    String(form.get("safetyPrompt") ?? ""),
+    String(form.get("tagPrompt") ?? ""),
+  );
+  revalidatePath("/preferences");
+};
+
+export const updateCustomFilterAction = async (
+  form: FormData,
+): Promise<void> => {
+  const mailbox = await currentMailbox();
+  if (!mailbox) return;
+  await saveCustomFilter(
+    mailbox.accountId,
+    String(form.get("customSource") ?? ""),
+  );
+  revalidatePath("/preferences");
 };

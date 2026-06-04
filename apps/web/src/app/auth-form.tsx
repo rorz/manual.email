@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, buttonVariants, Input } from "@manual.email/ui";
 import { useActionState, useState } from "react";
 import { type AuthState, authenticate } from "./actions";
 
@@ -19,28 +20,24 @@ export const AuthForm = () => {
     <>
       <form className="flex flex-col items-start gap-2" action={action}>
         <input type="hidden" name="mode" value={mode} />
-        <input
-          className="w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
+        <Input
+          className="max-w-sm"
           name="username"
           placeholder="Username"
           autoComplete="username"
         />
-        <input
-          className="w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
+        <Input
+          className="max-w-sm"
           name="password"
           type="password"
           placeholder="Password"
         />
-        <button
-          className="rounded border border-neutral-300 px-4 py-2 disabled:opacity-50"
-          type="submit"
-          disabled={pending}
-        >
+        <Button type="submit" disabled={pending}>
           {mode === "sign-up" ? "Sign up" : "Sign in"}
-        </button>
+        </Button>
       </form>
       <button
-        className="text-blue-600 underline"
+        className={buttonVariants({ variant: "link" })}
         type="button"
         onClick={() => setMode(mode === "sign-up" ? "sign-in" : "sign-up")}
       >

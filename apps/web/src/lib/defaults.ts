@@ -12,7 +12,11 @@
  * paths is a no-op via `onConflictDoNothing`.
  */
 
-import { RESERVED_TAGS } from "@manual.email/contracts";
+import {
+  DEFAULT_SAFETY_PROMPT,
+  DEFAULT_TAG_PROMPT,
+  RESERVED_TAGS,
+} from "@manual.email/contracts";
 import {
   type Db,
   filterConfigs,
@@ -20,13 +24,6 @@ import {
   trays,
   trayTags,
 } from "@manual.email/db";
-
-/** Default system prompt for the managed program — user-editable in Preferences. */
-const DEFAULT_SYSTEM_PROMPT =
-  "Triage each email. Tag genuinely time-sensitive or personally relevant " +
-  "mail as `important`; tag routine newsletters, receipts, and notifications " +
-  "as `unimportant`. Reject unsolicited bulk mail as spam and credential-" +
-  "harvesting attempts as phishing.";
 
 const tagId = (accountId: string, slug: string) => `tag_${accountId}_${slug}`;
 const trayId = (accountId: string, key: string) => `tray_${accountId}_${key}`;
@@ -43,6 +40,8 @@ const DEFAULT_TRAYS = [
   {
     key: RESERVED_TAGS.important,
     name: "Important",
+    color: "#a16207",
+    icon: "star",
     kind: "tag",
     position: 1,
     tagSlug: RESERVED_TAGS.important,
@@ -50,6 +49,8 @@ const DEFAULT_TRAYS = [
   {
     key: RESERVED_TAGS.unimportant,
     name: "Unimportant",
+    color: "#525252",
+    icon: "archive",
     kind: "tag",
     position: 2,
     tagSlug: RESERVED_TAGS.unimportant,
@@ -85,6 +86,8 @@ export const seedAccountDefaults = async (
         id: trayId(accountId, t.key),
         accountId,
         name: t.name,
+        color: "color" in t ? t.color : null,
+        icon: "icon" in t ? t.icon : null,
         kind: t.kind,
         position: t.position,
       })),
@@ -103,6 +106,11 @@ export const seedAccountDefaults = async (
 
   await db
     .insert(filterConfigs)
-    .values({ accountId, mode: "managed", systemPrompt: DEFAULT_SYSTEM_PROMPT })
+    .values({
+      accountId,
+      mode: "managed",
+      safetyPrompt: DEFAULT_SAFETY_PROMPT,
+      tagPrompt: DEFAULT_TAG_PROMPT,
+    })
     .onConflictDoNothing();
 };
