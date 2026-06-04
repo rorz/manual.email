@@ -9,10 +9,10 @@ this file is the build plan.
 The transport and guardrails are built and verified live (idempotency + DLQ
 exercised end-to-end against `wrangler dev`).
 
-- Bun monorepo: `apps/{web,ingress,egress}`, `packages/{db,contracts}`,
-  `appraise`. Names prefixed `@manual.email/*`.
-- Tooling: top-level Biome, strict TS, Knip; `appraise` enforces a 350-line
-  file ceiling. `bun run check` is the single gate.
+- Bun monorepo: `apps/{web,ingress,egress}`, `packages/{db,contracts,ui}`.
+  Names prefixed `@manual.email/*`.
+- Tooling: top-level Biome, strict TS, Knip; pokayoke enforces repo-specific
+  policy including the 350-line file ceiling. `bun run check` is the single gate.
 - `packages/db`: Drizzle schema as the source of truth (`accounts`,
   `addresses`, `messages`, `processed_messages`, `dead_letters`), the typed
   `createDb` client, R2 key helpers, `parseAddress`. Migrations generated, not

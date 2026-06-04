@@ -21,7 +21,6 @@ types, query shapes, or baseline interface chrome.
 | `packages/db` | Drizzle schema (single source of truth), the typed `createDb` client, R2 key helpers, and address parsing. |
 | `packages/contracts` | oRPC + `zod/mini` queue-payload contracts. The contract is the source of truth; worker message types are inferred from it. |
 | `packages/ui` | Shared React primitives for the web app: class composition, cva variants, buttons, inputs, panels, notices, chips, and page chrome. Tailwind stays utility-first and intentionally basic. |
-| `appraise` | Bun/TS guardrail enforcing the 350-line file ceiling. |
 
 ## Data flow
 
@@ -177,7 +176,7 @@ verdict, so a retry that already filtered just re-delivers.
 - `bun run dev` — run every workspace; `dev:web` / `dev:ingress` / `dev:egress`
   for one.
 - `bun run check` — the full gate: Biome + typecheck (regenerates worker types
-  first) + Knip + appraise.
+  first) + Knip + pokayoke.
 - `bun run db:generate` — regenerate migrations from the Drizzle schema;
   `db:migrate:local` / `db:migrate:prod` to apply.
 - Local inbound test: `apps/ingress/test/send.sh` POSTs to

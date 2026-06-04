@@ -31,6 +31,9 @@ export interface FilterProgram {
 /** Hard ceiling on a single program run. */
 const TIMEOUT_MS = 15_000;
 
+type FilterEnv = Record<string, string> &
+  Partial<Record<"GEMINI_FLASH_LITE" | "SAFETY_PROMPT" | "TAG_PROMPT", string>>;
+
 export const runFilter = async (
   binding: Parameters<typeof getSandbox>[0],
   accountId: string,
@@ -49,15 +52,15 @@ export const runFilter = async (
   await sandbox.writeFile(`${dir}/run.ts`, RUNNER);
   await sandbox.writeFile(`${dir}/input.json`, JSON.stringify(input));
 
-  const env: Record<string, string> = {
+  const env: FilterEnv = {
     FILTER_ERROR: `${dir}/error.txt`,
     FILTER_INPUT: `${dir}/input.json`,
     FILTER_OUTPUT: `${dir}/verdict.json`,
   };
   if (program.mode === "managed") {
-    env["GEMINI_FLASH_LITE"] = geminiKey;
-    env["SAFETY_PROMPT"] = program.safetyPrompt;
-    env["TAG_PROMPT"] = program.tagPrompt;
+    env.GEMINI_FLASH_LITE = geminiKey;
+    env.SAFETY_PROMPT = program.safetyPrompt;
+    env.TAG_PROMPT = program.tagPrompt;
   }
 
   await sandbox.exec(`bun ${dir}/run.ts`, { env, timeout: TIMEOUT_MS });

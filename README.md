@@ -13,13 +13,13 @@ engagement metrics. This is the Bun monorepo behind it; see
 | [`apps/egress`](apps/egress) | Cloudflare Worker | Outbound email sending |
 | [`packages/db`](packages/db) | [Drizzle](https://orm.drizzle.team) → D1 (SQLite) + R2 | Schema-as-code, inferred row types, R2 key helpers & generated migrations |
 | [`packages/contracts`](packages/contracts) | [oRPC](https://orpc.unnoq.com) + Zod 4 | Contract-first schemas; queue payload types shared by the workers |
-| [`appraise`](appraise) | Bun + low-level TS | Repo-grown quality checks (e.g. 350-line file ceiling) |
+| [`.pokayoke`](.pokayoke) | [pokayoke](https://www.npmjs.com/package/pokayoke) | Repo-specific guardrails (350-line file ceiling, arrow-function convention) |
 
 ## Tooling
 
 - **[Biome](https://biomejs.dev)** — formatter + linter (replaces ESLint/Prettier). Config: [`biome.jsonc`](biome.jsonc).
 - **[Knip](https://knip.dev)** — unused files / exports / dependencies, all issue types set to `error`. Config: [`knip.jsonc`](knip.jsonc).
-- **[`appraise/`](appraise)** — bespoke Bun checks; currently a hard 350-LoC-per-file ceiling.
+- **[pokayoke](https://www.npmjs.com/package/pokayoke)** — repo-specific policy checks in [`.pokayoke`](.pokayoke), including the 350-line file ceiling and arrow-function convention.
 - **TypeScript** — a strict shared base in [`tsconfig.base.json`](tsconfig.base.json) (`exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noUnusedLocals`/`Parameters`, …).
 
 ## Storage
@@ -120,12 +120,13 @@ bun run dev:egress    # egress worker  (wrangler dev) → http://localhost:10140
 ### Quality
 
 ```bash
-bun run check        # biome + typecheck + knip + appraise (the full gate)
+bun run check        # biome + typecheck + knip + pokayoke (the full gate)
 bun run lint         # biome check (lint + format diagnostics)
 bun run lint:fix     # biome check --write (autofix + format)
 bun run format       # biome format --write
 bun run knip         # unused files / exports / deps
-bun run appraise     # run all appraise (350-line ceiling, …)
+bun run pokayoke     # repo policy checks (350-line ceiling, arrow functions)
+bun run pokayoke:test # local pokayoke rule tests
 bun run typecheck    # tsc across all workspaces
 bun run cf-typegen   # regenerate worker binding types after editing wrangler.jsonc
 bun run build        # build all apps

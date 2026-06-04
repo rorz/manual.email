@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
+    ".": {
+      "entry": [".pokayoke/config.ts"],
+      "project": [".pokayoke/**/*.ts"]
+    },
     "apps/ingress": {
       "entry": ["test/**/*.ts"],
       // Loaded by filter programs inside the Sandbox container from embedded

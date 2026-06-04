@@ -4,7 +4,7 @@ Conventions for any agent working in this repo.
 
 ## Project shape
 
-Bun monorepo (`apps/*`, `packages/*`, `appraise`). Two Cloudflare Workers
+Bun monorepo (`apps/*`, `packages/*`). Two Cloudflare Workers
 (`ingress`, `egress`) decoupled by Cloudflare Queues; shared schema and
 contracts live in `packages/*`. See `docs/architecture.md` for the full picture.
 
@@ -15,7 +15,7 @@ contracts live in `packages/*`. See `docs/architecture.md` for the full picture.
 - **Single source of truth.** Schema lives in `packages/db` (Drizzle); wire
   shapes live in `packages/contracts` (oRPC + `zod/mini`). Never hand-write SQL
   or duplicate a payload type in a worker — derive from these.
-- **The gate is law.** `bun run check` (Biome + typecheck + Knip + appraise,
+- **The gate is law.** `bun run check` (Biome + typecheck + Knip + pokayoke,
   350-line file ceiling) must stay green. Run it before declaring work done.
 - **Migrations are generated.** Edit `packages/db/src/schema.ts`, then
   `bun run db:generate`. Never hand-edit files under `packages/db/migrations`.
