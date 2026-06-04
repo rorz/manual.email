@@ -20,12 +20,12 @@ import { runFilter } from "./executor";
 import { hasVerdict, loadFilterConfig, recordVerdict } from "./store";
 import { interpretOutput } from "./verdict";
 
-export async function filterMessage(
+export const filterMessage = async (
   env: Env,
   db: Db,
   accountId: string,
   body: IngressMessage,
-): Promise<void> {
+): Promise<void> => {
   if (await hasVerdict(db, body.id)) {
     await deliver(db, accountId, body);
     return;
@@ -48,4 +48,4 @@ export async function filterMessage(
 
   await deliver(db, accountId, body);
   await recordVerdict(db, accountId, body.id, verdict);
-}
+};

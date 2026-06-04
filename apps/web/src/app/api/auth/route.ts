@@ -6,10 +6,9 @@
  * and look broken. This returns a 200 so hitting the base URL confirms auth is
  * live and points at the real endpoints.
  */
-export function GET() {
-  return Response.json({
+export const GET = () =>
+  Response.json({
     ok: true,
     service: "better-auth",
     endpoints: ["/api/auth/ok", "/api/auth/get-session"],
   });
-}

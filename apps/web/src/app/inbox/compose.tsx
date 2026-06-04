@@ -7,7 +7,7 @@ import { type SendState, sendMessage } from "../actions";
  * Minimal compose form. Posts to the `sendMessage` server action, which derives
  * `from` from the session and enqueues to egress. Skeleton only.
  */
-export function Compose() {
+export const Compose = () => {
   const [state, action, pending] = useActionState<SendState, FormData>(
     sendMessage,
     {},
@@ -41,4 +41,4 @@ export function Compose() {
       {state.status && <p>{state.status}</p>}
     </form>
   );
-}
+};

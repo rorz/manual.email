@@ -20,7 +20,7 @@ export interface ParsedAddress {
 }
 
 /** Parse + normalise an email address, or `null` if it isn't well-formed. */
-export function parseAddress(raw: string): ParsedAddress | null {
+export const parseAddress = (raw: string): ParsedAddress | null => {
   const at = raw.trim().toLowerCase();
   const split = at.lastIndexOf("@");
   if (split <= 0 || split === at.length - 1) return null;
@@ -33,4 +33,4 @@ export function parseAddress(raw: string): ParsedAddress | null {
   if (!local || domain.includes("@")) return null;
 
   return { canonical: `${local}@${domain}`, local, domain, tag };
-}
+};

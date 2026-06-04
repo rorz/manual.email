@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "appraise": "bun run index.ts",
+    "appraise:enforce-arrow-function": "bun run enforce-arrow-function.ts",
     "appraise:max-file-lines": "bun run max-file-lines.ts",
     "typecheck": "tsc --noEmit"
   },

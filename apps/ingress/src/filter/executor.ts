@@ -30,13 +30,13 @@ export interface FilterProgram {
 /** Hard ceiling on a single program run. */
 const TIMEOUT_MS = 15_000;
 
-export async function runFilter(
+export const runFilter = async (
   binding: Parameters<typeof getSandbox>[0],
   accountId: string,
   program: FilterProgram,
   input: FilterInput,
   geminiKey: string,
-): Promise<string> {
+): Promise<string> => {
   const sandbox = getSandbox(binding, `${program.mode}:${accountId}`);
   const dir = `/work/${crypto.randomUUID()}`;
   const main =
@@ -66,4 +66,4 @@ export async function runFilter(
     // mode-aware policy decides whether that quarantines or retries.
     return "";
   }
-}
+};

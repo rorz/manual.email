@@ -41,7 +41,9 @@ const lookup = async (d: Db, canonical: string): Promise<string | null> => {
  * Resolve the mailbox owning `email`, provisioning it on first sight. Returns
  * `null` only if the address can't be parsed.
  */
-export async function resolveMailbox(email: string): Promise<Mailbox | null> {
+export const resolveMailbox = async (
+  email: string,
+): Promise<Mailbox | null> => {
   const parsed = parseAddress(email);
   if (!parsed) return null;
   const { canonical } = parsed;
@@ -66,7 +68,7 @@ export async function resolveMailbox(email: string): Promise<Mailbox | null> {
   // Seed the winning account's default trays/tags/filter config (idempotent).
   await seedAccountDefaults(d, winner);
   return { accountId: winner, address: canonical };
-}
+};
 
 /** A mailbox's messages, newest first. */
 export const listMessages = (accountId: string) =>

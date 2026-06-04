@@ -27,7 +27,7 @@ export const MANAGED_PROGRAM = `type Input = { subject: string | null; sender: s
 
 const MODEL = "gemini-flash-lite-latest";
 
-export default async function classify(input: Input) {
+const classify = async (input: Input) => {
   const key = process.env.GEMINI_FLASH_LITE;
   if (!key) throw new Error("missing GEMINI_FLASH_LITE");
   const base = process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com";
@@ -71,5 +71,7 @@ export default async function classify(input: Input) {
     ? out.decision
     : "other";
   return { disposition: "reject", category, reason: out.reason || "" };
-}
+};
+
+export default classify;
 `;

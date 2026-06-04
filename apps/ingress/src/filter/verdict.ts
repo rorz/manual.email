@@ -42,16 +42,19 @@ const QUARANTINE: FilterVerdict = {
 
 /** Turn the raw verdict-file contents into a verdict, applying the failure
  *  policy above. Throws `FilterUnavailableError` for a managed non-verdict. */
-export function interpretOutput(mode: FilterMode, raw: string): FilterVerdict {
+export const interpretOutput = (
+  mode: FilterMode,
+  raw: string,
+): FilterVerdict => {
   const verdict = parseVerdict(raw);
   if (verdict) return verdict;
   if (mode === "custom") return QUARANTINE;
   throw new FilterUnavailableError(
     "Managed filter program produced no valid verdict.",
   );
-}
+};
 
-function parseVerdict(raw: string): FilterVerdict | null {
+const parseVerdict = (raw: string): FilterVerdict | null => {
   const trimmed = raw.trim();
   if (!trimmed) return null;
   let json: unknown;
@@ -62,4 +65,4 @@ function parseVerdict(raw: string): FilterVerdict | null {
   }
   const result = filterVerdictSchema.safeParse(json);
   return result.success ? result.data : null;
-}
+};

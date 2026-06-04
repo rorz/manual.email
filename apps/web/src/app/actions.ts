@@ -31,16 +31,16 @@ const MAIL_DOMAIN = "manual.email";
 const USERNAME = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
 
 /** Map a username to its derived address, or `null` if it isn't well-formed. */
-function usernameToEmail(raw: string): string | null {
+const usernameToEmail = (raw: string): string | null => {
   const username = raw.trim().toLowerCase();
   return USERNAME.test(username) ? `${username}@${MAIL_DOMAIN}` : null;
-}
+};
 
 /** Sign in or sign up (branch on the form's `mode`), then land on the inbox. */
-export async function authenticate(
+export const authenticate = async (
   _prev: AuthState,
   form: FormData,
-): Promise<AuthState> {
+): Promise<AuthState> => {
   const mode = form.get("mode");
   const username = String(form.get("username") ?? "");
   const password = String(form.get("password") ?? "");
@@ -74,23 +74,23 @@ export async function authenticate(
   }
 
   redirect("/inbox");
-}
+};
 
 /** End the session and return to the splash. */
-export async function signOut(): Promise<void> {
+export const signOut = async (): Promise<void> => {
   await getAuth().api.signOut({ headers: await headers() });
   redirect("/");
-}
+};
 
 export interface SendState {
   status?: string;
 }
 
 /** Validate a composed message and enqueue it to egress (from = session). */
-export async function sendMessage(
+export const sendMessage = async (
   _prev: SendState,
   form: FormData,
-): Promise<SendState> {
+): Promise<SendState> => {
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session) return { status: "Not signed in" };
 
@@ -115,4 +115,4 @@ export async function sendMessage(
 
   await env.EGRESS_QUEUE.send(outbound);
   return { status: "Queued" };
-}
+};

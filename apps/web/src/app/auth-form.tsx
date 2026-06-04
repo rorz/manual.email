@@ -8,7 +8,7 @@ import { type AuthState, authenticate } from "./actions";
  * between sign-in and sign-up via a hidden `mode` field. Your username is your
  * address local-part — no email required. Skeleton only.
  */
-export function AuthForm() {
+export const AuthForm = () => {
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [state, action, pending] = useActionState<AuthState, FormData>(
     authenticate,
@@ -53,4 +53,4 @@ export function AuthForm() {
       )}
     </>
   );
-}
+};

@@ -12,17 +12,16 @@ import PostalMime from "postal-mime";
 /** Upper bound on body characters handed to a program. */
 const MAX_BODY_CHARS = 16_000;
 
-export async function extractText(raw: ArrayBuffer): Promise<string> {
+export const extractText = async (raw: ArrayBuffer): Promise<string> => {
   const email = await PostalMime.parse(raw);
   const text = email.text ?? (email.html ? stripHtml(email.html) : "");
   return text.slice(0, MAX_BODY_CHARS);
-}
+};
 
-function stripHtml(html: string): string {
-  return html
+const stripHtml = (html: string): string =>
+  html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-}

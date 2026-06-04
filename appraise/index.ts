@@ -20,7 +20,7 @@ import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 import { REPO_ROOT } from "./lib";
 
-const CHECKS = ["max-file-lines"] as const;
+const CHECKS = ["max-file-lines", "enforce-arrow-function"] as const;
 
 type CheckName = (typeof CHECKS)[number];
 

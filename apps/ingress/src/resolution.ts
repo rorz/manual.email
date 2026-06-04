@@ -9,10 +9,10 @@
 import { addresses, type Db, parseAddress } from "@manual.email/db";
 import { eq } from "drizzle-orm";
 
-export async function resolveRecipient(
+export const resolveRecipient = async (
   db: Db,
   raw: string,
-): Promise<string | null> {
+): Promise<string | null> => {
   const parsed = parseAddress(raw);
   if (!parsed) return null;
 
@@ -22,4 +22,4 @@ export async function resolveRecipient(
     .where(eq(addresses.address, parsed.canonical))
     .get();
   return row?.accountId ?? null;
-}
+};

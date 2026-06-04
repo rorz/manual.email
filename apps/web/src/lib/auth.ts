@@ -58,7 +58,7 @@ const createAuth = () =>
 
 let cached: ReturnType<typeof createAuth> | undefined;
 
-export function getAuth() {
+export const getAuth = () => {
   cached ??= createAuth();
   return cached;
-}
+};

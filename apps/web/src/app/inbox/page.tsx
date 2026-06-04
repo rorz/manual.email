@@ -8,7 +8,7 @@ import { Compose } from "./compose";
  * Inbox: a signed-in user's messages plus a compose box. Skeleton only — no
  * styling, no pagination, no read/unread interactions yet.
  */
-export default async function Inbox() {
+const Inbox = async () => {
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session) redirect("/");
 
@@ -39,4 +39,6 @@ export default async function Inbox() {
       <Compose />
     </main>
   );
-}
+};
+
+export default Inbox;

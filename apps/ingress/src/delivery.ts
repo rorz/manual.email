@@ -12,11 +12,11 @@ import type { IngressMessage } from "@manual.email/contracts";
 import { type Db, messages } from "@manual.email/db";
 import { and, eq } from "drizzle-orm";
 
-export async function deliver(
+export const deliver = async (
   db: Db,
   accountId: string,
   body: IngressMessage,
-): Promise<void> {
+): Promise<void> => {
   const threadId = await resolveThread(db, accountId, body);
   await db
     .insert(messages)
@@ -35,18 +35,18 @@ export async function deliver(
       receivedAt: Date.parse(body.receivedAt),
     })
     .onConflictDoNothing();
-}
+};
 
 /**
  * Thread id for an inbound message: inherit the parent's thread when this is a
  * reply to a message already in the same mailbox, else start a new thread keyed
  * by the RFC822 Message-ID (falling back to the derived id when absent).
  */
-async function resolveThread(
+const resolveThread = async (
   db: Db,
   accountId: string,
   body: IngressMessage,
-): Promise<string> {
+): Promise<string> => {
   if (body.inReplyTo) {
     const parent = await db
       .select({ threadId: messages.threadId })
@@ -61,4 +61,4 @@ async function resolveThread(
     if (parent?.threadId) return parent.threadId;
   }
   return body.messageId ?? body.id;
-}
+};

@@ -61,10 +61,10 @@ const DEFAULT_TRAYS = [
  * Seed the default tags, trays, and managed filter config for `accountId`.
  * Safe to call repeatedly (idempotent).
  */
-export async function seedAccountDefaults(
+export const seedAccountDefaults = async (
   db: Db,
   accountId: string,
-): Promise<void> {
+): Promise<void> => {
   await db
     .insert(tags)
     .values(
@@ -105,4 +105,4 @@ export async function seedAccountDefaults(
     .insert(filterConfigs)
     .values({ accountId, mode: "managed", systemPrompt: DEFAULT_SYSTEM_PROMPT })
     .onConflictDoNothing();
-}
+};

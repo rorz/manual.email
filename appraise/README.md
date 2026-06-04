@@ -8,6 +8,7 @@ written in low-level TypeScript (byte scans, no third-party runtime deps).
 | Check | Enforces |
 | --- | --- |
 | `max-file-lines` | Hard **350-line** ceiling (`wc -l` semantics) on authored source in `apps/**` and `appraise/**`. |
+| `enforce-arrow-function` | Arrow functions for authored TypeScript in `apps/**`, `packages/**`, and `appraise/**`. |
 
 ## Run
 
@@ -15,6 +16,7 @@ written in low-level TypeScript (byte scans, no third-party runtime deps).
 bun run appraise                 # from repo root — runs every appraisal
 bun appraise/index.ts          # equivalent
 bun appraise/index.ts max-file-lines   # a single appraisal
+bun appraise/index.ts enforce-arrow-function
 ```
 
 ## Opt-out
@@ -27,3 +29,10 @@ bun appraise/index.ts max-file-lines   # a single appraisal
 
 Splitting the file is almost always the better answer — reach for the opt-out
 only with a real reason written inline.
+
+`enforce-arrow-function` accepts an adjacent directive on the violation line or
+the line immediately above:
+
+```ts
+// appraise-ignore: enforce-arrow-function -- <written justification>
+```

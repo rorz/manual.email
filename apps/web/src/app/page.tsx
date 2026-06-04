@@ -8,7 +8,7 @@ import { AuthForm } from "./auth-form";
  * Splash + auth. Bare-bones by design — the real UI is the user's job; this
  * just exercises BetterAuth username+password so the rest of the app is testable.
  */
-export default async function Home() {
+const Home = async () => {
   const session = await getAuth().api.getSession({ headers: await headers() });
 
   if (session) {
@@ -38,4 +38,6 @@ export default async function Home() {
       <AuthForm />
     </main>
   );
-}
+};
+
+export default Home;

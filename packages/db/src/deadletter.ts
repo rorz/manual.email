@@ -18,11 +18,11 @@ export const isDeadLetterQueue = (queue: string): boolean =>
 type DeadLetterMessage = { body: unknown; ack: () => void };
 
 /** Persist every message in a DLQ batch, then ack it. */
-export async function drainDeadLetters(
+export const drainDeadLetters = async (
   db: Db,
   queue: string,
   messages: Iterable<DeadLetterMessage>,
-): Promise<void> {
+): Promise<void> => {
   const failedAt = Date.now();
   for (const message of messages) {
     await db
@@ -30,4 +30,4 @@ export async function drainDeadLetters(
       .values({ queue, body: JSON.stringify(message.body), failedAt });
     message.ack();
   }
-}
+};

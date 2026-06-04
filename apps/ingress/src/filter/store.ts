@@ -27,10 +27,10 @@ const DEFAULT_PROGRAM: FilterProgram = {
 };
 
 /** An account's program config, defaulting to a managed run when unset. */
-export async function loadFilterConfig(
+export const loadFilterConfig = async (
   db: Db,
   accountId: string,
-): Promise<FilterProgram> {
+): Promise<FilterProgram> => {
   const row = await db
     .select({
       mode: filterConfigs.mode,
@@ -41,25 +41,28 @@ export async function loadFilterConfig(
     .where(eq(filterConfigs.accountId, accountId))
     .get();
   return row ?? DEFAULT_PROGRAM;
-}
+};
 
 /** Whether a verdict already exists for this message (skip re-filtering). */
-export async function hasVerdict(db: Db, messageId: string): Promise<boolean> {
+export const hasVerdict = async (
+  db: Db,
+  messageId: string,
+): Promise<boolean> => {
   const row = await db
     .select({ messageId: messageVerdicts.messageId })
     .from(messageVerdicts)
     .where(eq(messageVerdicts.messageId, messageId))
     .get();
   return row !== undefined;
-}
+};
 
 /** Persist a verdict and, on pass, upsert + attach its tags. */
-export async function recordVerdict(
+export const recordVerdict = async (
   db: Db,
   accountId: string,
   messageId: string,
   verdict: FilterVerdict,
-): Promise<void> {
+): Promise<void> => {
   await db
     .insert(messageVerdicts)
     .values({
@@ -73,14 +76,14 @@ export async function recordVerdict(
   if (verdict.disposition === "pass" && verdict.tags.length > 0) {
     await applyTags(db, accountId, messageId, verdict.tags);
   }
-}
+};
 
-async function applyTags(
+const applyTags = async (
   db: Db,
   accountId: string,
   messageId: string,
   slugs: string[],
-): Promise<void> {
+): Promise<void> => {
   const unique = [...new Set(slugs)];
   const tagId = (slug: string) => `tag_${accountId}_${slug}`;
 
@@ -94,4 +97,4 @@ async function applyTags(
     .insert(messageTags)
     .values(unique.map((slug) => ({ messageId, tagId: tagId(slug) })))
     .onConflictDoNothing();
-}
+};
