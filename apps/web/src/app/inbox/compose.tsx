@@ -14,11 +14,28 @@ export function Compose() {
   );
 
   return (
-    <form action={action}>
-      <input name="to" type="email" placeholder="To" />
-      <input name="subject" placeholder="Subject" />
-      <textarea name="text" placeholder="Message" />
-      <button type="submit" disabled={pending}>
+    <form className="flex flex-col items-start gap-2" action={action}>
+      <input
+        className="w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
+        name="to"
+        type="email"
+        placeholder="To"
+      />
+      <input
+        className="w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
+        name="subject"
+        placeholder="Subject"
+      />
+      <textarea
+        className="min-h-28 w-full max-w-sm rounded border border-neutral-300 px-3 py-2"
+        name="text"
+        placeholder="Message"
+      />
+      <button
+        className="rounded border border-neutral-300 px-4 py-2 disabled:opacity-50"
+        type="submit"
+        disabled={pending}
+      >
         Send
       </button>
       {state.status && <p>{state.status}</p>}

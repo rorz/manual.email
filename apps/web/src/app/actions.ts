@@ -20,21 +20,44 @@ export interface AuthState {
   error?: string;
 }
 
+/**
+ * The mail domain every account lives under. A username is the local-part of
+ * the user's first-party address, so identity and mailbox are one and the same:
+ * sign up as `alice` and your address is `alice@manual.email`.
+ */
+const MAIL_DOMAIN = "manual.email";
+
+/** Allowed username shape — a clean, tag-free email local-part. */
+const USERNAME = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
+
+/** Map a username to its derived address, or `null` if it isn't well-formed. */
+function usernameToEmail(raw: string): string | null {
+  const username = raw.trim().toLowerCase();
+  return USERNAME.test(username) ? `${username}@${MAIL_DOMAIN}` : null;
+}
+
 /** Sign in or sign up (branch on the form's `mode`), then land on the inbox. */
 export async function authenticate(
   _prev: AuthState,
   form: FormData,
 ): Promise<AuthState> {
   const mode = form.get("mode");
-  const email = String(form.get("email") ?? "");
+  const username = String(form.get("username") ?? "");
   const password = String(form.get("password") ?? "");
-  const name = String(form.get("name") ?? "");
+
+  const email = usernameToEmail(username);
+  if (!email) {
+    return {
+      error:
+        "Username may use letters, numbers, dots, hyphens and underscores.",
+    };
+  }
 
   try {
     if (mode === "sign-up") {
       await getAuth().api.signUpEmail({
         headers: await headers(),
-        body: { name, email, password },
+        body: { name: username.trim().toLowerCase(), email, password },
       });
     } else {
       await getAuth().api.signInEmail({
@@ -43,7 +66,10 @@ export async function authenticate(
       });
     }
   } catch (error) {
-    if (error instanceof APIError) return { error: error.message };
+    // BetterAuth speaks "email"; users here only ever see a username.
+    if (error instanceof APIError) {
+      return { error: error.message.replace(/email/gi, "username") };
+    }
     throw error;
   }
 

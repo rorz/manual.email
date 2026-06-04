@@ -18,21 +18,24 @@ export default async function Inbox() {
   const messages = await listMessages(mailbox.accountId);
 
   return (
-    <main>
-      <h1>Inbox — {mailbox.address}</h1>
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
+      <h1 className="text-2xl font-semibold">Inbox — {mailbox.address}</h1>
       {messages.length === 0 ? (
         <p>No messages yet.</p>
       ) : (
-        <ul>
+        <ul className="flex flex-col gap-2">
           {messages.map((m) => (
-            <li key={m.id}>
+            <li
+              className="rounded border border-neutral-300 px-3 py-2"
+              key={m.id}
+            >
               <strong>{m.subject ?? "(no subject)"}</strong> — {m.mailFrom}{" "}
               <time>{new Date(m.receivedAt).toLocaleString()}</time>
             </li>
           ))}
         </ul>
       )}
-      <h2>Compose</h2>
+      <h2 className="text-lg font-semibold">Compose</h2>
       <Compose />
     </main>
   );

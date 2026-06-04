@@ -17,8 +17,9 @@ import { resolveMailbox } from "./mailbox";
  * is read on first request inside workerd rather than at module evaluation,
  * and cached for the lifetime of the isolate.
  *
- * Email+password only for now. On sign-up we best-effort provision a mailbox
- * for the new user's address; `/inbox` and the compose action reconcile if that
+ * Username+password only for now. The web app derives an `@manual.email`
+ * address from the chosen username, so on sign-up we best-effort provision a
+ * mailbox for that address; `/inbox` and the compose action reconcile if that
  * ever fails, so sign-up never blocks on it.
  */
 const createAuth = () =>

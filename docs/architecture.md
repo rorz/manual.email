@@ -15,7 +15,7 @@ query.
 
 | Workspace | Role |
 | --- | --- |
-| `apps/web` | Next.js 16 UI, served on Cloudflare via vinext (Vite). BetterAuth email+password sign-in; every mutation is a server action (no API routes). Compose validates outbound mail and produces to `EGRESS_QUEUE`. |
+| `apps/web` | Next.js 16 UI, served on Cloudflare via vinext (Vite). BetterAuth username+password sign-in (the username is the address local-part — no email collected); every mutation is a server action (no API routes). Compose validates outbound mail and produces to `EGRESS_QUEUE`. |
 | `apps/ingress` | Receives mail (Email Routing `email()`), enqueues it, then consumes the ingress queue: idempotency → recipient resolution → route. |
 | `apps/egress` | Consumes the egress queue and sends outbound mail through Cloudflare Email Service (`SEND_EMAIL` binding). |
 | `packages/db` | Drizzle schema (single source of truth), the typed `createDb` client, R2 key helpers, and address parsing. |
@@ -91,16 +91,18 @@ to keep those bundled validators small.
 
 ## Web app & auth
 
-`apps/web` authenticates with **BetterAuth** (email + password) over the shared
+`apps/web` authenticates with **BetterAuth** (username + password) over the shared
 D1 via the Drizzle adapter; its four tables live in `packages/db` next to the
-mail schema. Every mutation — sign-in/up/out and compose — is a **Next.js server
-action**, so there are no API routes (the `nextCookies()` plugin lets actions set
-the session cookie). Sign-up auto-provisions the user's mailbox: a
-`databaseHooks.user.create.after` hook resolves the new user's email into an
-`accounts` row + primary `addresses` row through `parseAddress`. That resolution
-is idempotent and is re-run lazily by `/inbox` and compose, keeping auth identity
-and mail identity one-to-one. Because compose derives `from` from the session,
-the web app is not an open relay.
+mail schema. Sign-up collects only a username — no email — and derives the
+account's first-party address from it (`<username>@manual.email`), so auth
+identity and mailbox identity are the same handle. Every mutation —
+sign-in/up/out and compose — is a **Next.js server action**, so there are no API
+routes (the `nextCookies()` plugin lets actions set the session cookie). Sign-up
+auto-provisions the user's mailbox: a `databaseHooks.user.create.after` hook
+resolves the derived address into an `accounts` row + primary `addresses` row
+through `parseAddress`. That resolution is idempotent and is re-run lazily by
+`/inbox` and compose, keeping auth identity and mail identity one-to-one. Because
+compose derives `from` from the session, the web app is not an open relay.
 
 ## Idempotency & resolution
 
