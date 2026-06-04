@@ -63,11 +63,14 @@ export default {
 
       const accountId = await resolveRecipient(db, to);
       if (accountId) {
-        // TODO: filter + sort, persist for `accountId`, forward to EGRESS_QUEUE.
-        void env.EGRESS_QUEUE;
+        // TODO: deliver to the mailbox — filter + sort, persist metadata to D1
+        // and the raw body to R2 for `accountId`. Any forward rule is handed to
+        // EGRESS_QUEUE (ingress never sends mail itself).
         void accountId;
       } else {
-        // TODO: unresolved recipient — bounce / reject.
+        // TODO: unresolved recipient — enqueue a bounce on EGRESS_QUEUE.
+        // ingress decides; egress is the only worker that sends.
+        void env.EGRESS_QUEUE;
       }
 
       await markProcessed(db, key); // record once the routing decision is made

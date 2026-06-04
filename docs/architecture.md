@@ -5,10 +5,11 @@ people rather than for engagement metrics. The product goal shapes the
 engineering: mail must arrive exactly once, route predictably, and never get
 silently dropped, so the system is small, legible, and unsurprising.
 
-It is a Bun monorepo. Inbound and outbound mail are handled by two
-single-purpose Cloudflare Workers, decoupled by Cloudflare Queues. Shared
-schema and wire contracts live in `packages/*` so the workers never duplicate a
-type or a query.
+It is a Bun monorepo. Inbound and outbound mail run on Cloudflare Email Service
+— ingress receives via Email Routing, egress sends via Email Sending — handled
+by two single-purpose Workers decoupled by Cloudflare Queues. Shared schema and
+wire contracts live in `packages/*` so the workers never duplicate a type or a
+query.
 
 ## Topology
 
@@ -16,7 +17,7 @@ type or a query.
 | --- | --- |
 | `apps/web` | Next.js 16 UI, served on Cloudflare via vinext (Vite). |
 | `apps/ingress` | Receives mail (Email Routing `email()`), enqueues it, then consumes the ingress queue: idempotency → recipient resolution → route. |
-| `apps/egress` | Consumes the egress queue and sends mail via the `SEND_EMAIL` binding. |
+| `apps/egress` | Consumes the egress queue and sends outbound mail through Cloudflare Email Service (`SEND_EMAIL` binding). |
 | `packages/db` | Drizzle schema (single source of truth), the typed `createDb` client, R2 key helpers, and address parsing. |
 | `packages/contracts` | oRPC + `zod/mini` queue-payload contracts. The contract is the source of truth; worker message types are inferred from it. |
 | `appraise` | Bun/TS guardrail enforcing the 350-line file ceiling. |
@@ -28,9 +29,9 @@ flowchart LR
   MX[Email Routing] -->|email&#40;&#41;| IN[ingress worker]
   IN -->|INGRESS_QUEUE| INQ[(manual-email-ingress)]
   INQ --> INC[ingress queue consumer]
-  INC -->|EGRESS_QUEUE| EGQ[(manual-email-egress)]
+  INC -->|deliver: persist| D1[(D1 manual-email)]
+  INC -.bounce / forward.->|EGRESS_QUEUE| EGQ[(manual-email-egress)]
   EGQ --> EG[egress worker] -->|SEND_EMAIL| OUT[outbound mail]
-  INC <-->|idempotency + resolution| D1[(D1 manual-email)]
   IN -.raw MIME.-> R2[(R2 manual-email-messages)]
   INC -.retries exhausted.-> DLQ[(*-dlq)]
   DLQ -->|drain| D1
@@ -39,6 +40,12 @@ flowchart LR
 Email Routing invokes `email()` **once per recipient**, so the same message can
 arrive several times with identical bytes. Each invocation enqueues, and the
 queue consumer is the single chokepoint that decides what is new.
+
+**ingress never sends mail.** It receives, persists to the mailbox, and decides;
+egress is the single egress point for everything outbound. When ingress needs
+something sent — a bounce for an unresolved recipient, or a forward rule — it
+enqueues it on `EGRESS_QUEUE` rather than sending directly. Egress is likewise
+fed by user-composed mail from the web app.
 
 When a consumer exhausts its retries, the message is moved to that queue's
 dead-letter queue (`<queue>-dlq`). Each worker also consumes its own DLQ and
