@@ -8,14 +8,17 @@
     "build": "vinext build",
     "start": "vinext start --port 10120",
     "deploy": "vinext deploy",
+    "cf-typegen": "wrangler types",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@manual.email/contracts": "workspace:*",
     "next": "16.2.7",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.39.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19.2.16",
@@ -26,7 +29,8 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vinext": "^0.0.55",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "wrangler": "^4.97.0"
   },
   "trustedDependencies": [
     "sharp",

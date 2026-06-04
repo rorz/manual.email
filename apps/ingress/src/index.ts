@@ -20,9 +20,17 @@ import {
   createDb,
   drainDeadLetters,
   isDeadLetterQueue,
+  messageBodyKey,
   parseAddress,
+  unresolvedBodyKey,
 } from "@manual.email/db";
-import { idempotencyKey, isProcessed, markProcessed } from "./idempotency";
+import { deliver } from "./delivery";
+import {
+  deriveId,
+  idempotencyKey,
+  isProcessed,
+  markProcessed,
+} from "./idempotency";
 import { resolveRecipient } from "./resolution";
 
 const canonical = (address: string): string =>
@@ -31,18 +39,36 @@ const canonical = (address: string): string =>
 export default {
   async email(message, env, _ctx): Promise<void> {
     const raw = await new Response(message.raw).arrayBuffer();
-    // TODO: persist raw to R2 + metadata to D1.
+    const key = await idempotencyKey(
+      message.headers,
+      raw,
+      canonical(message.to),
+    );
+    // Deterministic id (from the recipient-scoped key) doubles as the row PK and
+    // the R2 object id, so queue retries and Email Routing redeliveries converge
+    // on the same object/row instead of duplicating.
+    const id = await deriveId(key);
+
+    // Resolve the owner here so the raw body is written straight under its
+    // account prefix; unknown recipients land under a shared `unresolved/` one.
+    const accountId = await resolveRecipient(createDb(env.DB), message.to);
+    const r2Key = accountId
+      ? messageBodyKey(accountId, id)
+      : unresolvedBodyKey(id);
+    await env.MESSAGES_BUCKET.put(r2Key, raw);
+
     // Validate at the trust boundary: this is the only point where untrusted
-    // Email Routing data becomes a structured payload. The queue consumer
-    // then trusts the contract type (no re-parse).
+    // Email Routing data becomes a structured payload. The queue consumer then
+    // trusts the contract type (no re-parse).
     const inbound = inboundMessageSchema.parse({
-      idempotencyKey: await idempotencyKey(
-        message.headers,
-        raw,
-        canonical(message.to),
-      ),
+      idempotencyKey: key,
+      id,
+      r2Key,
       from: message.from,
       to: message.to,
+      subject: message.headers.get("subject"),
+      messageId: message.headers.get("message-id"),
+      inReplyTo: message.headers.get("in-reply-to"),
       rawSize: raw.byteLength,
       receivedAt: new Date().toISOString(),
     } satisfies IngressMessage);
@@ -55,25 +81,23 @@ export default {
       return drainDeadLetters(db, batch.queue, batch.messages);
     }
     for (const message of batch.messages) {
-      const { idempotencyKey: key, to } = message.body;
-      if (await isProcessed(db, key)) {
+      const body = message.body;
+      if (await isProcessed(db, body.idempotencyKey)) {
         message.ack(); // duplicate / redelivery — already handled
         continue;
       }
 
-      const accountId = await resolveRecipient(db, to);
+      const accountId = await resolveRecipient(db, body.to);
       if (accountId) {
-        // TODO: deliver to the mailbox — filter + sort, persist metadata to D1
-        // and the raw body to R2 for `accountId`. Any forward rule is handed to
-        // EGRESS_QUEUE (ingress never sends mail itself).
-        void accountId;
+        await deliver(db, accountId, body);
       } else {
-        // TODO: unresolved recipient — enqueue a bounce on EGRESS_QUEUE.
-        // ingress decides; egress is the only worker that sends.
+        // Unresolved recipient — the raw body is parked under `unresolved/`.
+        // Bouncing / forward rules are intentionally out of scope; egress is the
+        // only worker that sends, fed from EGRESS_QUEUE when that lands.
         void env.EGRESS_QUEUE;
       }
 
-      await markProcessed(db, key); // record once the routing decision is made
+      await markProcessed(db, body.idempotencyKey); // record after the decision
       message.ack();
     }
   },

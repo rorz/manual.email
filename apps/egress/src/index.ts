@@ -2,9 +2,10 @@
  * egress — outbound email Worker.
  *
  * Consumes the egress queue and sends mail through Cloudflare Email Service via
- * the `SEND_EMAIL` binding (`env.SEND_EMAIL.send({ to, from, subject, ... })`),
- * which delivers transactional mail to arbitrary recipients. Logic to be
- * fleshed out.
+ * the `SEND_EMAIL` binding's structured builder
+ * (`env.SEND_EMAIL.send({ from, to, subject, text, html })`), which delivers
+ * transactional mail to arbitrary recipients. No MIME assembly, and explicitly
+ * not Email Routing's verified-only send.
  */
 
 import type { EgressMessage } from "@manual.email/contracts";
@@ -20,11 +21,26 @@ export default {
       return drainDeadLetters(createDb(env.DB), batch.queue, batch.messages);
     }
     for (const message of batch.messages) {
-      // TODO: env.SEND_EMAIL.send({ to, from, subject, html, text }) — the
-      // Email Service builder; no manual MIME assembly required.
-      void env.SEND_EMAIL;
-      void message.body;
-      message.ack();
+      try {
+        const { from, to, subject, text, html } = message.body;
+        await env.SEND_EMAIL.send({
+          from,
+          to,
+          subject,
+          text,
+          ...(html !== undefined && { html }),
+        });
+        message.ack();
+      } catch (error) {
+        // Email Service rejected/failed — leave it for the queue to retry, then
+        // DLQ once retries are exhausted. Never silently drop outbound mail.
+        console.error("egress send failed", {
+          to: message.body?.to,
+          code: (error as { code?: string }).code,
+          message: (error as Error).message,
+        });
+        message.retry();
+      }
     }
   },
 } satisfies ExportedHandler<Env, EgressMessage>;

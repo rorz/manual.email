@@ -1,5 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    "apps/web": {
+      // `cloudflare:workers` is a workerd-provided virtual module (like
+      // `node:*`), not an npm package — keep knip from flagging it.
+      "ignoreDependencies": ["cloudflare"]
+    }
+  },
   "rules": {
     "files": "error",
     "dependencies": "error",

@@ -33,6 +33,17 @@ const toHex = (buf: ArrayBuffer): string =>
     "",
   );
 
+/**
+ * Deterministic message id derived from the (recipient-scoped) idempotency key.
+ * Used as both the `messages` row PK and the R2 body key so queue retries and
+ * Email Routing redeliveries converge on the same row/object instead of
+ * creating duplicates. Hex SHA-256, so it's a safe R2 key segment.
+ */
+export async function deriveId(idempotencyKey: string): Promise<string> {
+  const bytes = new TextEncoder().encode(idempotencyKey);
+  return toHex(await crypto.subtle.digest("SHA-256", bytes));
+}
+
 /** Has this key already been processed? */
 export async function isProcessed(db: Db, key: string): Promise<boolean> {
   const row = await db

@@ -26,7 +26,7 @@
     "deploy:ingress": "bun --filter '@manual.email/ingress' deploy",
     "deploy:egress": "bun --filter '@manual.email/egress' deploy",
     "typecheck": "bun run cf-typegen && bun --filter '*' typecheck",
-    "cf-typegen": "bun --filter '@manual.email/ingress' --filter '@manual.email/egress' cf-typegen",
+    "cf-typegen": "bun --filter '@manual.email/ingress' --filter '@manual.email/egress' --filter '@manual.email/web' cf-typegen",
     "db:generate": "bun --filter '@manual.email/db' db:generate",
     "db:migrate:local": "bun --filter '@manual.email/ingress' db:migrate:local",
     "db:migrate": "bun --filter '@manual.email/ingress' db:migrate"

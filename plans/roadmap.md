@@ -41,22 +41,30 @@ exercised end-to-end against `wrangler dev`).
 
 In rough dependency order:
 
-1. **Persist the raw inbound body.** `ingress.email()` currently enqueues only
-   metadata; the MIME bytes are dropped. Store raw → R2 (key via `packages/db`)
-   and carry the key on the queue payload (extend `inboundMessageSchema`).
-2. **Deliver to the mailbox.** For a resolved recipient, write a `messages` row
-   (+ the R2 key) so it shows up in the client. Filtering/sorting/threading
-   live here.
+1. ✅ **Persist the raw inbound body.** `email()` resolves the recipient, streams
+   the raw MIME to R2 (`messages/<accountId>/…` or `unresolved/…`), and carries a
+   deterministic id + the R2 key + extracted headers on `inboundMessageSchema`.
+2. ✅ **Deliver to the mailbox.** The consumer writes a `messages` row (inbound,
+   inbox, R2 key, minimal `In-Reply-To` threading) for a resolved recipient,
+   idempotent under retries via the deterministic id + `onConflictDoNothing`.
 3. **Bounce unresolved recipients.** Enqueue a bounce on `EGRESS_QUEUE` (ingress
-   never sends directly).
+   never sends directly). Deferred — handled alongside the rules rework; the
+   unresolved body is currently parked under `unresolved/` and left.
 4. **Forward rules.** When a delivered message matches a forward rule, enqueue
-   the forward on `EGRESS_QUEUE`.
-5. **egress `send()`.** Build the Email Service payload from the queue message
-   and call `env.SEND_EMAIL.send(...)`; handle the `EmailSendResult` / errors.
-6. **Account + address seeding.** Nothing populates `accounts`/`addresses`, so
-   every recipient currently resolves to nothing. Needs a registration path
-   (and the egress queue producer wired from the web app for composed mail).
-7. **web UI.** Read mailbox from D1/R2; compose → `EGRESS_QUEUE`.
+   the forward on `EGRESS_QUEUE`. Deferred — part of the rules rework.
+5. ✅ **egress `send()`.** The consumer builds the Email Service payload from the
+   queue message and calls `env.SEND_EMAIL.send({ from, to, subject, text, html })`,
+   acking on success and retrying (then DLQ) on a thrown error. Outbound contract
+   carries `text` (required) + `html` (optional).
+6. ✅ **Account + address seeding.** Seeding: `apps/ingress/scripts/seed.ts`
+   (`bun run --filter @manual.email/ingress seed -- [--name <n>] [--remote] <addr>…`)
+   canonicalises via `parseAddress` and writes an account + its address(es), so
+   recipients resolve. Producer: `apps/web` is now a vinext Worker
+   (`wrangler.jsonc` + `vite.config.ts` with `@cloudflare/vite-plugin`); its
+   `POST /api/send` route validates with `outboundMessageSchema` and produces to
+   the `EGRESS_QUEUE` binding via `import { env } from "cloudflare:workers"`.
+7. **web UI.** Read mailbox from D1/R2; build the compose UI on top of the
+   existing `POST /api/send` producer route.
 
 ## Missing — provisioning / config
 
@@ -84,3 +92,9 @@ In rough dependency order:
   replace the manual `apps/ingress/test` smoke loop.
 - egress secrets/config posture once a real sender domain exists.
 - Pin the Bun version (`.bun-version` / `engines`).
+- **Compose-route hardening before public launch:** require auth and derive
+  `from` server-side from the authenticated account (the route currently trusts
+  the client `from` — fine while non-public, an open relay if shipped as-is);
+  add size caps to `outboundMessageSchema` (`subject`/`text`/`html`) aligned to
+  Queues/Email Service limits; add outbound idempotency so an at-least-once
+  egress retry can't double-send.
