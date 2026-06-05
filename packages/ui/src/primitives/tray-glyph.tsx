@@ -30,26 +30,23 @@ import {
   PackageIcon,
   PaletteIcon,
   PaperPlaneTiltIcon,
-  PlusIcon,
   ReceiptIcon,
   RocketLaunchIcon,
   ShieldCheckIcon,
   ShoppingBagIcon,
   SparkleIcon,
-  StackIcon,
   StarIcon,
   TagIcon,
   TargetIcon,
   TrayIcon,
   UsersIcon,
-  WarningOctagonIcon,
 } from "@phosphor-icons/react/ssr";
 import type { CSSProperties } from "react";
 import {
   DEFAULT_TRAY_ICON,
   normalizeTrayIcon,
   type TrayIconName,
-} from "./tray-options";
+} from "../utils";
 
 type IconComponent = typeof TrayIcon;
 
@@ -110,22 +107,3 @@ export const TrayGlyph = ({
   const style: CSSProperties | undefined = color ? { color } : undefined;
   return <Icon className={className} style={style} />;
 };
-
-export const SystemTrayGlyph = ({
-  className = "size-4 shrink-0",
-  kind,
-}: {
-  className?: string;
-  kind: "everything" | "quarantine";
-}) =>
-  kind === "everything" ? (
-    <StackIcon className={className} />
-  ) : (
-    <WarningOctagonIcon className={className} />
-  );
-
-export const NewTrayGlyph = ({
-  className = "size-4 shrink-0",
-}: {
-  className?: string;
-}) => <PlusIcon className={className} />;

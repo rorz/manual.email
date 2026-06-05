@@ -5,7 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./tray-options": "./src/tray-options.ts"
+    "./tray-options": "./src/utils/tray-options.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
