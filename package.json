@@ -68,6 +68,8 @@
     "cf-typegen": "bun --filter '@manual.email/ingress' --filter '@manual.email/egress' --filter '@manual.email/web' cf-typegen",
     "db:generate": "bun --filter '@manual.email/db' db:generate",
     "db:migrate:local": "bun --filter '@manual.email/db' db:migrate:local",
+    "db:seed:local": "bun --filter '@manual.email/db' db:seed:local",
+    "db:splat:local": "bun --filter '@manual.email/db' db:splat:local",
     "db:migrate:prod": "bun --filter '@manual.email/db' db:migrate:prod"
   },
   "devDependencies": {

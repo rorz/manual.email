@@ -32,6 +32,14 @@ export const AuthForm = () => {
           type="password"
           placeholder="Password"
         />
+        {mode === "sign-up" && (
+          <Input
+            autoComplete="off"
+            className="max-w-sm"
+            name="inviteCode"
+            placeholder="Invite code"
+          />
+        )}
         <Button type="submit" disabled={pending}>
           {mode === "sign-up" ? "Sign up" : "Sign in"}
         </Button>

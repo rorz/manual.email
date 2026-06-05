@@ -48,6 +48,8 @@ no Cloudflare credentials):
 ```sh
 bun run db:generate       # regenerate after a schema change
 bun run db:migrate:local  # apply to local D1 (miniflare)
+bun run db:splat:local    # clear local D1 data, then seed
+bun run db:seed:local     # seed local-only signup + rory/manual
 bun run db:migrate:prod   # apply to remote D1 (set the real database_id first)
 ```
 

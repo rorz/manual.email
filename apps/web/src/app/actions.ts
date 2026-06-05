@@ -51,6 +51,7 @@ export const authenticate = async (
   const mode = form.get("mode");
   const username = String(form.get("username") ?? "");
   const password = String(form.get("password") ?? "");
+  const inviteCode = String(form.get("inviteCode") ?? "");
 
   const email = usernameToEmail(username);
   if (!email) {
@@ -62,9 +63,15 @@ export const authenticate = async (
 
   try {
     if (mode === "sign-up") {
+      const body = {
+        email,
+        inviteCode,
+        name: username.trim().toLowerCase(),
+        password,
+      };
       await getAuth().api.signUpEmail({
         headers: await headers(),
-        body: { name: username.trim().toLowerCase(), email, password },
+        body,
       });
     } else {
       await getAuth().api.signInEmail({

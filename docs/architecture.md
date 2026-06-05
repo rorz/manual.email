@@ -70,9 +70,9 @@ mail for inspection instead of dropping it. The DLQ path does trivial work
 - **D1 `manual-email`** — the mail tables (`accounts`, `addresses` for recipient
   → account resolution, `messages`, `processed_messages` idempotency ledger,
   `dead_letters`), the filtering tables (`tags` + `message_tags`, `trays` +
-  `tray_tags`, `message_verdicts`, `filter_configs`), plus BetterAuth's
-  `user`/`session`/`account`/`verification` tables (web auth). `packages/db` owns
-  the migrations
+  `tray_tags`, `message_verdicts`, `filter_configs`), the invite-only signup
+  gate (`invite_codes`), plus BetterAuth's `user`/`session`/`account`/
+  `verification` tables (web auth). `packages/db` owns the migrations
   (`packages/db/migrations`); all three workers bind the database as `DB`.
   Sign-up is owned by the web app (see below); `apps/ingress/scripts/seed.ts`
   (`bun run --filter @manual.email/ingress seed`) remains for provisioning
@@ -102,7 +102,9 @@ output: `filterVerdictSchema` validates the verdict a Sandbox program returns
 
 `apps/web` authenticates with **BetterAuth** (username + password) over the shared
 D1 via the Drizzle adapter; its four tables live in `packages/db` next to the
-mail schema. Sign-up collects only a username — no email — and derives the
+mail schema. Sign-up is invite-only: the auth hook reserves a three-word
+`invite_codes` row before BetterAuth creates the user, then redeems it against
+the returned user id. Sign-up collects a username — no email — and derives the
 account's first-party address from it (`<username>@manual.email`), so auth
 identity and mailbox identity are the same handle. Every mutation —
 sign-in/up/out and compose — is a **Next.js server action**, so there are no API

@@ -3,12 +3,17 @@ import { dash } from "@better-auth/infra";
 import {
   account,
   createDb,
+  normalizeInviteCode,
+  redeemInviteCode,
+  releaseInviteCode,
+  reserveInviteCode,
   session,
   user,
   verification,
 } from "@manual.email/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { resolveMailbox } from "./mailbox";
 
@@ -18,10 +23,30 @@ import { resolveMailbox } from "./mailbox";
  * and cached for the lifetime of the isolate.
  *
  * Username+password only for now. The web app derives an `@manual.email`
- * address from the chosen username, so on sign-up we best-effort provision a
- * mailbox for that address; `/inbox` and the compose action reconcile if that
- * ever fails, so sign-up never blocks on it.
+ * address from the chosen username. Sign-up is invite-only: the auth hook
+ * reserves an invite before BetterAuth creates the user, then redeems it once
+ * BetterAuth returns that user.
  */
+const inviteOnlyError = (message: string) =>
+  APIError.from("BAD_REQUEST", {
+    code: "INVITE_CODE_INVALID",
+    message,
+  });
+
+const inviteCodeFromBody = (body: unknown): string | null => {
+  if (!(body && typeof body === "object")) return null;
+  const raw = (body as { inviteCode?: unknown }).inviteCode;
+  return typeof raw === "string" ? normalizeInviteCode(raw) : null;
+};
+
+const userIdFromReturned = (returned: unknown): string | null => {
+  if (!(returned && typeof returned === "object")) return null;
+  const user = (returned as { user?: unknown }).user;
+  if (!(user && typeof user === "object")) return null;
+  const id = (user as { id?: unknown }).id;
+  return typeof id === "string" ? id : null;
+};
+
 const createAuth = () =>
   betterAuth({
     database: drizzleAdapter(createDb(env.DB), {
@@ -31,6 +56,31 @@ const createAuth = () =>
     emailAndPassword: { enabled: true },
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-up/email") return;
+        const code = inviteCodeFromBody(ctx.body);
+        if (!code) {
+          throw inviteOnlyError("New signups are invite only for now.");
+        }
+        const reserved = await reserveInviteCode(createDb(env.DB), code);
+        if (!reserved) {
+          throw inviteOnlyError("Invite code is invalid or already used.");
+        }
+        ctx.body.inviteCode = code;
+      }),
+      after: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-up/email") return;
+        const code = inviteCodeFromBody(ctx.body);
+        if (!code) return;
+        const userId = userIdFromReturned(ctx.context.returned);
+        if (userId) {
+          await redeemInviteCode(createDb(env.DB), code, userId);
+        } else {
+          await releaseInviteCode(createDb(env.DB), code);
+        }
+      }),
+    },
     databaseHooks: {
       user: {
         create: {

@@ -88,6 +88,7 @@
         "drizzle-orm": "catalog:",
       },
       "devDependencies": {
+        "better-auth": "catalog:",
         "drizzle-kit": "catalog:",
         "wrangler": "catalog:",
       },

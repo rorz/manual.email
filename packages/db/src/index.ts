@@ -11,5 +11,6 @@
 export * from "./address";
 export * from "./client";
 export * from "./deadletter";
+export * from "./invites";
 export * from "./keys";
 export * from "./schema";

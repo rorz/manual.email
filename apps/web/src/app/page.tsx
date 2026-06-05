@@ -30,7 +30,10 @@ const Home = async () => {
   return (
     <PageShell className="mx-auto max-w-2xl items-start gap-4 bg-white p-8">
       <h1 className="text-2xl font-semibold">manual.email</h1>
-      <p>Pick a username to get your @manual.email address.</p>
+      <p>
+        New signups are invite only for now. If you have a code, pick a username
+        to get your @manual.email address.
+      </p>
       <AuthForm />
     </PageShell>
   );
