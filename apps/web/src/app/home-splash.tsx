@@ -227,7 +227,7 @@ export const HomeSplash = () => {
                 noisy, it became automated, and most of all it stopped being
                 delightful.
               </p>
-              <p>
+              <p className="font-sans">
                 I want to change that. I want something that uses technology for
                 the boring bits (filtering and sorting), but that lets me -- and
                 me alone -- write my emails.
@@ -238,18 +238,15 @@ export const HomeSplash = () => {
             </div>
           </div>
         </div>
-        <div className="col-span-1 flex flex-col items-center p-4">
-          <div className="flex w-full max-w-sm flex-col items-center gap-3 border border-mist-950/20 bg-mist-50/60 p-4 text-mist-950 shadow-2xl shadow-mist-950/15 backdrop-blur-md dark:border-mist-100/20 dark:bg-mist-950/50 dark:text-mist-50 dark:shadow-black/50">
-            <p>
-              Sign into <strong>manual</strong>
-            </p>
-            <AuthForm
-              controlClassName="!border-mist-950/20 !bg-mist-50/75 !text-mist-950 placeholder:!text-mist-500 focus:!border-mist-950/60 dark:!border-mist-100/25 dark:!bg-mist-950/70 dark:!text-mist-50 dark:placeholder:!text-mist-400 dark:focus:!border-mist-100/60"
-              errorClassName="!text-red-700 dark:!text-red-200"
-              linkClassName="!text-mist-800 dark:!text-mist-200"
-              submitClassName="!border !border-mist-950/80 !bg-mist-950 !text-mist-50 hover:!bg-mist-800 dark:!border-mist-50/80 dark:!bg-mist-50 dark:!text-mist-950 dark:hover:!bg-mist-200"
-            />
-          </div>
+        <div className="col-span-1 flex flex-col items-center justify-center p-4">
+          <AuthForm
+            cardClassName="border border-mist-950/20 bg-mist-50 text-mist-950 shadow-2xl shadow-mist-950/15 backdrop-blur-md dark:border-mist-100/20 dark:bg-mist-950/50 dark:text-mist-50 dark:shadow-black/50"
+            controlClassName="!border-mist-950/20 !bg-mist-50/75 !text-mist-950 placeholder:!text-mist-500 focus:!border-mist-950/60 dark:!border-mist-100/25 dark:!bg-mist-950/70 dark:!text-mist-50 dark:placeholder:!text-mist-400 dark:focus:!border-mist-100/60"
+            errorClassName="!text-red-700 dark:!text-red-200"
+            linkClassName="!text-mist-800 dark:!text-mist-200"
+            submitClassName="!border !border-mist-950/80 !bg-mist-950 !text-mist-50 hover:!bg-mist-800 dark:!border-mist-50/80 dark:!bg-mist-50 dark:!text-mist-950 dark:hover:!bg-mist-200"
+            titleClassName="text-mist-900 dark:text-mist-50"
+          />
         </div>
       </div>
       <div className="fixed right-4 bottom-4 z-30 grid grid-cols-3 gap-1 rounded-full border border-mist-950/20 bg-mist-50/70 p-1 shadow-mist-950/15 shadow-xl backdrop-blur-xl dark:border-mist-100/20 dark:bg-mist-950/55 dark:shadow-black/50">

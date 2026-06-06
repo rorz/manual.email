@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Zalando_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const zalandoSans = Zalando_Sans({
+  axes: ["wdth"],
+  display: "swap",
+  style: ["normal", "italic"],
+  subsets: ["latin", "latin-ext"],
+  weight: "variable",
 });
 
 const geistMono = Geist_Mono({
@@ -25,7 +28,7 @@ const RootLayout = ({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${zalandoSans.className} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full min-w-full flex-col bg-neutral-50 text-neutral-900">
         {children}

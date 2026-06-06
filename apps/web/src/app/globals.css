@@ -6,11 +6,13 @@
  * Tailwind v4 — `@import "tailwindcss"` pulls in Preflight (the cross-browser
  * reset) plus the utility layer. Skeleton styling lives as utility classes on
  * the components, not as hand-rolled element CSS. The project-level
- * customisation is wiring the Geist fonts into the theme and making `dark:`
+ * customisation is wiring the app fonts into the theme and making `dark:`
  * respond to an explicit `.dark` ancestor so local theme toggles can drive it.
  */
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:
+    "Zalando Sans", "Zalando Sans Fallback", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
 }
