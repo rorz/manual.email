@@ -6,7 +6,10 @@ export const PageShell = ({
   ...props
 }: React.HTMLAttributes<HTMLElement>) => (
   <main
-    className={cn("flex w-full flex-1 flex-col bg-neutral-50", className)}
+    className={cn(
+      "flex w-full min-h-screen flex-1 flex-col bg-neutral-50",
+      className,
+    )}
     {...props}
   />
 );
