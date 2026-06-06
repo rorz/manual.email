@@ -1,12 +1,13 @@
 @import "tailwindcss";
 @source "../../../../packages/ui/src";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /*
  * Tailwind v4 — `@import "tailwindcss"` pulls in Preflight (the cross-browser
  * reset) plus the utility layer. Skeleton styling lives as utility classes on
- * the components, not as hand-rolled element CSS. The only project-level
- * customisation is wiring the Geist fonts into the theme so `font-sans` /
- * `font-mono` resolve to them.
+ * the components, not as hand-rolled element CSS. The project-level
+ * customisation is wiring the Geist fonts into the theme and making `dark:`
+ * respond to an explicit `.dark` ancestor so local theme toggles can drive it.
  */
 
 @theme inline {
