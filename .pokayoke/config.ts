@@ -3,6 +3,7 @@ import { defineConfig, definePlugin } from "pokayoke";
 import { enforceArrowFunction } from "./rules/enforce-arrow-function";
 import { maxFileLines } from "./rules/max-file-lines";
 import { oneUiComponentPerFile } from "./rules/one-ui-component-per-file";
+import { primitiveImportBoundaries } from "./rules/primitive-import-boundaries";
 import { uiSourceBuckets } from "./rules/ui-source-buckets";
 
 export default defineConfig({
@@ -14,6 +15,7 @@ export default defineConfig({
         [enforceArrowFunction.meta.id]: enforceArrowFunction,
         [maxFileLines.meta.id]: maxFileLines,
         [oneUiComponentPerFile.meta.id]: oneUiComponentPerFile,
+        [primitiveImportBoundaries.meta.id]: primitiveImportBoundaries,
         [uiSourceBuckets.meta.id]: uiSourceBuckets,
       },
     }),
@@ -39,6 +41,7 @@ export default defineConfig({
     "package/workspace-protocol": ["error", { protocol: "workspace:*" }],
     "structure/max-file-lines": ["error", { max: 350 }],
     "typescript/enforce-arrow-function": "error",
+    "ui/primitive-import-boundaries": "error",
     "ui/one-component-per-file": "error",
     "ui/source-buckets": "error",
   },

@@ -1,12 +1,15 @@
-import { Aurora, Button, buttonVariants, PageShell } from "@manual.email/ui";
+import {
+  Aurora,
+  Button,
+  buttonVariants,
+  MetallicPaint,
+  PageShell,
+} from "@manual.email/ui";
 import { headers } from "next/headers";
-import Image from "next/image";
 import Link from "next/link";
 import { getAuth } from "@/lib/auth";
-import MetallicPaint from "../../../../packages/ui/src/primitives/metallic-paint";
 import { signOut } from "./actions";
 import { AuthForm } from "./auth-form";
-import logo from "./logo.svg";
 
 /**
  * Splash + auth. Bare-bones by design — the real UI is the user's job; this

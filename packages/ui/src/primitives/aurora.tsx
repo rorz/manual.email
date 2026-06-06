@@ -117,6 +117,17 @@ interface AuroraProps {
   speed?: number;
 }
 
+interface AuroraUniforms {
+  readonly uAmplitude: { value: number };
+  readonly uBlend: { value: number };
+  readonly uColorStops: { value: number[][] };
+  readonly uResolution: { value: [number, number] };
+  readonly uTime: { value: number };
+}
+
+const auroraUniforms = (program: Program): AuroraUniforms =>
+  program.uniforms as unknown as AuroraUniforms;
+
 export const Aurora: FC<AuroraProps> = (props) => {
   const {
     colorStops = ["#5227FF", "#7cff67", "#5227FF"],
@@ -145,20 +156,23 @@ export const Aurora: FC<AuroraProps> = (props) => {
 
     let program: Program | undefined;
 
-    function resize() {
+    const resize = () => {
       if (!ctn) return;
       const width = ctn.offsetWidth;
       const height = ctn.offsetHeight;
       renderer.setSize(width, height);
       if (program) {
-        program.uniforms.uResolution.value = [width, height];
+        auroraUniforms(program).uResolution.value = [width, height];
       }
-    }
+    };
     window.addEventListener("resize", resize);
 
     const geometry = new Triangle(gl);
-    if (geometry.attributes.uv) {
-      delete geometry.attributes.uv;
+    const attributes = geometry.attributes as typeof geometry.attributes & {
+      uv?: unknown;
+    };
+    if (attributes.uv) {
+      delete attributes.uv;
     }
 
     const colorStopsArray = colorStops.map((hex) => {
@@ -186,11 +200,12 @@ export const Aurora: FC<AuroraProps> = (props) => {
       animateId = requestAnimationFrame(update);
       const { time = t * 0.01, speed = 1.0 } = propsRef.current;
       if (program) {
-        program.uniforms.uTime.value = time * speed * 0.1;
-        program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
-        program.uniforms.uBlend.value = propsRef.current.blend ?? blend;
+        const uniforms = auroraUniforms(program);
+        uniforms.uTime.value = time * speed * 0.1;
+        uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
+        uniforms.uBlend.value = propsRef.current.blend ?? blend;
         const stops = propsRef.current.colorStops ?? colorStops;
-        program.uniforms.uColorStops.value = stops.map((hex: string) => {
+        uniforms.uColorStops.value = stops.map((hex: string) => {
           const c = new Color(hex);
           return [c.r, c.g, c.b];
         });
@@ -209,7 +224,7 @@ export const Aurora: FC<AuroraProps> = (props) => {
       }
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [amplitude]);
+  }, [amplitude, blend, colorStops]);
 
   return <div ref={ctnDom} className="w-full h-full" />;
 };
