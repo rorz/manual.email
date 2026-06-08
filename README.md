@@ -13,13 +13,13 @@ engagement metrics. This is the Bun monorepo behind it; see
 | [`apps/egress`](apps/egress) | Cloudflare Worker | Outbound email sending |
 | [`packages/db`](packages/db) | [Drizzle](https://orm.drizzle.team) → D1 (SQLite) + R2 | Schema-as-code, inferred row types, R2 key helpers & generated migrations |
 | [`packages/contracts`](packages/contracts) | [oRPC](https://orpc.unnoq.com) + Zod 4 | Contract-first schemas; queue payload types shared by the workers |
-| [`.pokayoke`](.pokayoke) | [pokayoke](https://www.npmjs.com/package/pokayoke) | Repo-specific guardrails (350-line file ceiling, arrow-function convention) |
+| [`pokayoke.jsonc`](pokayoke.jsonc) + [`.pokayoke`](.pokayoke) | [pokayoke](https://www.npmjs.com/package/pokayoke) | Repo-specific guardrails (350-line file ceiling, arrow-function convention) |
 
 ## Tooling
 
 - **[Biome](https://biomejs.dev)** — formatter + linter (replaces ESLint/Prettier). Config: [`biome.jsonc`](biome.jsonc).
 - **[Knip](https://knip.dev)** — unused files / exports / dependencies, all issue types set to `error`. Config: [`knip.jsonc`](knip.jsonc).
-- **[pokayoke](https://www.npmjs.com/package/pokayoke)** — repo-specific policy checks in [`.pokayoke`](.pokayoke), including the 350-line file ceiling, arrow-function convention, and catalog dependency policy.
+- **[pokayoke](https://www.npmjs.com/package/pokayoke)** — repo-specific policy in [`pokayoke.jsonc`](pokayoke.jsonc), with local rules in [`.pokayoke/rules`](.pokayoke/rules), including the 350-line file ceiling, arrow-function convention, and catalog dependency policy.
 - **TypeScript** — a strict shared base in [`tsconfig.base.json`](tsconfig.base.json) (`exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noUnusedLocals`/`Parameters`, …).
 
 ## Storage

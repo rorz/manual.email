@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { RuleContext } from "pokayoke";
 
-import { countNewlines, maxFileLines } from "./max-file-lines";
+import { countNewlines, maxFileLines } from "./max-file-lines.rule";
 
 describe("structure/max-file-lines", () => {
   test("matches wc -l newline counting", () => {
@@ -54,9 +54,9 @@ const createContext = ({
   readonly options: { readonly max: number };
   readonly sources: Record<string, string>;
 }): RuleContext<{ readonly max: number }> => ({
-  execAdapter: async () => ({ exitCode: 0, stderr: "", stdout: "" }),
   files: async () => files,
   fix: false,
+  glob: async () => [],
   options,
   packageJson: async () => ({}),
   parseTypescript: async () => {

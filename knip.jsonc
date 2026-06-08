@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {
-      "entry": [".pokayoke/config.ts"],
+      "entry": [".pokayoke/rules/**/*.rule.ts"],
       "project": [".pokayoke/**/*.ts"]
     },
     "apps/ingress": {

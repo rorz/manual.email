@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { parseTypescriptSource } from "pokayoke";
 
-import { detectViolations } from "./enforce-arrow-function";
+import { detectViolations } from "./enforce-arrow-function.rule";
 
 describe("typescript/enforce-arrow-function", () => {
   test("reports function declarations and expressions", () => {

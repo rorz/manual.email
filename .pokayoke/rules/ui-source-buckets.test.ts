@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type { RuleContext } from "pokayoke";
 
-import { detectBucketViolations, uiSourceBuckets } from "./ui-source-buckets";
+import {
+  detectBucketViolations,
+  uiSourceBuckets,
+} from "./ui-source-buckets.rule";
 
 describe("ui/source-buckets", () => {
   test("allows primitives, composites, utils, and the root barrel", () => {
@@ -106,9 +109,9 @@ describe("ui/source-buckets", () => {
 const createContext = (
   files: readonly string[],
 ): RuleContext<Record<string, never>> => ({
-  execAdapter: async () => ({ exitCode: 0, stderr: "", stdout: "" }),
   files: async () => [...files],
   fix: false,
+  glob: async () => [],
   options: {},
   packageJson: async () => ({}),
   parseTypescript: async () => {

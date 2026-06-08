@@ -5,7 +5,7 @@ import {
   detectViolations,
   findTopLevelComponents,
   oneUiComponentPerFile,
-} from "./one-ui-component-per-file";
+} from "./one-ui-component-per-file.rule";
 
 describe("ui/one-component-per-file", () => {
   test("reports more than one component in a shared UI file", () => {
@@ -74,9 +74,9 @@ const createContext = ({
   readonly files: string[];
   readonly sources: Record<string, string>;
 }): RuleContext<Record<string, never>> => ({
-  execAdapter: async () => ({ exitCode: 0, stderr: "", stdout: "" }),
   files: async () => files,
   fix: false,
+  glob: async () => [],
   options: {},
   packageJson: async () => ({}),
   parseTypescript: async (file) =>

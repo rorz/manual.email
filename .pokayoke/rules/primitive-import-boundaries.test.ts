@@ -4,7 +4,7 @@ import { parseTypescriptSource, type RuleContext } from "pokayoke";
 import {
   detectPrimitiveImportViolations,
   primitiveImportBoundaries,
-} from "./primitive-import-boundaries";
+} from "./primitive-import-boundaries.rule";
 
 describe("ui/primitive-import-boundaries", () => {
   test("reports primitives importing other component files", () => {
@@ -64,9 +64,9 @@ const createContext = ({
   readonly files: string[];
   readonly sources: Record<string, string>;
 }): RuleContext<Record<string, never>> => ({
-  execAdapter: async () => ({ exitCode: 0, stderr: "", stdout: "" }),
   files: async () => files,
   fix: false,
+  glob: async () => [],
   options: {},
   packageJson: async () => ({}),
   parseTypescript: async (file) =>

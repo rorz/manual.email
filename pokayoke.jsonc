@@ -1,0 +1,36 @@
+{
+  "$schema": "https://pokayoke.dev/schema.json",
+  "extends": ["pokayoke/recommended"],
+  "localRules": [".pokayoke/rules/**/*.rule.ts"],
+  "files": [
+    "AGENTS.md",
+    "README.md",
+    "docs/**/*.md",
+    "package.json",
+    "apps/**/*.{css,ts,tsx}",
+    "packages/**/*.{ts,tsx}",
+    ".pokayoke/**/*.ts"
+  ],
+  "ignores": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.wrangler/**",
+    "**/.vinext/**",
+    "apps/web/worker/**",
+    "**/*.d.ts"
+  ],
+  "suppressions": {
+    "directive": "pokayoke-ignore",
+    "requireReason": true,
+    "reportUnused": "warn"
+  },
+  "rules": {
+    "package/catalog": "error",
+    "package/workspace-protocol": ["error", { "protocol": "workspace:*" }],
+    "structure/max-file-lines": ["error", { "max": 350 }],
+    "typescript/enforce-arrow-function": "error",
+    "ui/primitive-import-boundaries": "error",
+    "ui/one-component-per-file": "error",
+    "ui/source-buckets": "error"
+  }
+}
