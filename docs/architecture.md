@@ -186,11 +186,19 @@ verdict, so a retry that already filtered just re-delivers.
 
 ## Deploying
 
-`bun run deploy` (or `deploy:web` / `deploy:ingress` / `deploy:egress`) applies
-any **pending remote D1 migrations first**, then deploys the worker(s). D1
-migrations are tracked and idempotent, so this is a no-op when nothing is
-pending — but it means prod can never run against an unmigrated schema. Because
-deploy applies migrations, review generated migrations before shipping.
+`bun run deploy` is the production release command: it applies any pending remote
+D1 migrations once, then deploys all workers. D1 migrations are tracked and
+idempotent, so this is a no-op when nothing is pending — but generated migrations
+still need review before shipping.
+
+`deploy:web`, `deploy:ingress`, and `deploy:egress` deploy only that worker; they
+do **not** run database migrations. GitHub Actions owns production deploys via
+`.github/workflows/deploy.yml`: on `main` pushes (or manual dispatch), it
+installs dependencies, runs `bun run check`, verifies generated files are
+committed, then runs `bun run deploy`. The workflow needs
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub secrets. Detach or
+disable any Cloudflare dashboard builds that also promote production from the
+same push.
 
 Prod auth needs these set once per worker via `wrangler secret put` (run in the
 worker's dir, e.g. `apps/web`): `BETTER_AUTH_SECRET` and `BETTER_AUTH_API_KEY`

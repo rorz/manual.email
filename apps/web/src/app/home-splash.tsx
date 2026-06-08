@@ -209,13 +209,41 @@ export const HomeSplash = () => {
               />
             </div>
           </div>
-          <div className="flex h-full w-full flex-col items-start gap-8 border-mist-950/20 border-t bg-mist-50/80 p-8 text-mist-950 backdrop-blur-sm dark:border-mist-100/20 dark:bg-mist-950/80 dark:text-mist-50">
-            <div className="flex flex-col items-start gap-1 text-mist-700 dark:text-mist-50">
-              <div>From: Rory McMeekin (rory@manual.email)</div>
-              <div>To: You</div>
+          <div className="flex h-full w-full flex-col items-start gap-12 border-mist-950/20 border-t bg-mist-50/80 text-mist-950 backdrop-blur-sm dark:border-mist-100/20 dark:bg-mist-950/80 dark:text-mist-50">
+            <div className="flex flex-col items-start gap-1 text-mist-700 dark:text-mist-50 w-full px-8 py-2">
+              <div className="flex flex-col justify-between items-start w-full gap-4">
+                <div className="flex-col flex w-full pt-4 gap-2">
+                  {/*<span className="font-medium tracking-wide uppercase">
+                    From
+                  </span>*/}
+                  <div className="flex items-end w-full">
+                    <span className="text-mist-700 text-sm">
+                      1st June, 3:04pm
+                    </span>
+                    <div className="flex gap-2 items-center ml-auto">
+                      <div className="size-10 rounded-full bg-blue-300" />
+                      <div className="flex flex-col gap-0.5 leading-none">
+                        <div className="flex gap-2 items-center">
+                          <span className="text-sm">Rory McMeekin</span>
+                          <div className="font-stretch-ultra-condensed font-black italic px-1.5 py-0.5 flex items-center justify-center bg-mist-500 text-white rounded-lg leading-none">
+                            <span className="text-xs">m #1</span>
+                          </div>
+                        </div>
+                        <span className="text-mist-500 text-xs">
+                          {"<rory@manual.email>"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <span className="font-medium">To:</span>
+                  <span>You</span>
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <p>Hello,</p>
+            <div className="space-y-2 px-8">
+              <p className="mb-6">Hello,</p>
               <p>
                 The first email was sent in 1971 -- well before mail merge, drip
                 campaigns, and AI agents. For a long time, the way to send
@@ -233,8 +261,8 @@ export const HomeSplash = () => {
                 me alone -- write my emails.
               </p>
               <p>I want email to be human again.</p>
-              <p>Want to join me...?</p>
-              <p>Rory</p>
+              <p className="mt-6">Want to join me...?</p>
+              <p className="my-6">Rory</p>
             </div>
           </div>
         </div>
