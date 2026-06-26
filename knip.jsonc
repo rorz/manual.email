@@ -1,5 +1,20 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
+  "rules": {
+    "binaries": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "duplicates": "error",
+    "enumMembers": "error",
+    "exports": "error",
+    "files": "error",
+    "nsExports": "error",
+    "nsTypes": "error",
+    "optionalPeerDependencies": "error",
+    "types": "error",
+    "unlisted": "error",
+    "unresolved": "error"
+  },
   "workspaces": {
     ".": {
       "entry": [".pokayoke/rules/**/*.rule.ts"],
@@ -17,20 +32,5 @@
       // (worker/index.ts is a vinext deploy artifact, excluded via .gitignore.)
       "ignoreDependencies": ["cloudflare"]
     }
-  },
-  "rules": {
-    "files": "error",
-    "dependencies": "error",
-    "devDependencies": "error",
-    "optionalPeerDependencies": "error",
-    "unlisted": "error",
-    "unresolved": "error",
-    "binaries": "error",
-    "exports": "error",
-    "nsExports": "error",
-    "types": "error",
-    "nsTypes": "error",
-    "enumMembers": "error",
-    "duplicates": "error"
   }
 }

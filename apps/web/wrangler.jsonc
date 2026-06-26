@@ -1,27 +1,25 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "manual-email-web",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "dist/client",
+    "not_found_handling": "none"
+  },
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      // Replace with the real D1 id from `wrangler d1 create manual-email`.
+      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb",
+      "database_name": "manual-email",
+      "migrations_dir": "../../packages/db/migrations"
+    }
+  ],
   // vinext's App Router entry; vinext deploy can still regenerate a custom
   // worker/index.ts if image optimization is ever needed.
   "main": "vinext/server/app-router-entry",
-  "vars": {
-    // Non-sensitive. The secret (BETTER_AUTH_SECRET) and the dashboard key
-    // (BETTER_AUTH_API_KEY) are set via `wrangler secret put`, not here.
-    "BETTER_AUTH_URL": "https://manual.email"
-  },
-  "assets": {
-    "directory": "dist/client",
-    "not_found_handling": "none",
-    "binding": "ASSETS"
-  },
-  "routes": [
-    {
-      "custom_domain": true,
-      "pattern": "manual.email"
-    }
-  ],
+  "name": "manual-email-web",
   "observability": {
     "logs": {
       "enabled": true,
@@ -32,15 +30,6 @@
       "head_sampling_rate": 1
     }
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "manual-email",
-      // Replace with the real D1 id from `wrangler d1 create manual-email`.
-      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb",
-      "migrations_dir": "../../packages/db/migrations"
-    }
-  ],
   "queues": {
     "producers": [
       {
@@ -48,5 +37,16 @@
         "queue": "manual-email-egress"
       }
     ]
+  },
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "manual.email"
+    }
+  ],
+  "vars": {
+    // Non-sensitive. The secret (BETTER_AUTH_SECRET) and the dashboard key
+    // (BETTER_AUTH_API_KEY) are set via `wrangler secret put`, not here.
+    "BETTER_AUTH_URL": "https://manual.email"
   }
 }

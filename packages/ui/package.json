@@ -1,15 +1,4 @@
 {
-  "name": "@manual.email/ui",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./tray-options": "./src/utils/tray-options.ts"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
     "@phosphor-icons/react": "catalog:",
     "class-variance-authority": "catalog:",
@@ -20,5 +9,16 @@
   "devDependencies": {
     "@types/react": "catalog:",
     "typescript": "catalog:"
-  }
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./tray-options": "./src/utils/tray-options.ts"
+  },
+  "name": "@manual.email/ui",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

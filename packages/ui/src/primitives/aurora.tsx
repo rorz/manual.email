@@ -145,8 +145,8 @@ export const Aurora: FC<AuroraProps> = (props) => {
 
     const renderer = new Renderer({
       alpha: true,
-      premultipliedAlpha: true,
       antialias: true,
+      premultipliedAlpha: true,
     });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
@@ -181,15 +181,15 @@ export const Aurora: FC<AuroraProps> = (props) => {
     });
 
     program = new Program(gl, {
-      vertex: VERT,
       fragment: FRAG,
       uniforms: {
-        uTime: { value: 0 },
         uAmplitude: { value: amplitude },
+        uBlend: { value: blend },
         uColorStops: { value: colorStopsArray },
         uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
-        uBlend: { value: blend },
+        uTime: { value: 0 },
       },
+      vertex: VERT,
     });
 
     const mesh = new Mesh(gl, { geometry, program });

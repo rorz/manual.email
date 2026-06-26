@@ -12,10 +12,10 @@ const parentDir = fileURLToPath(
 );
 
 const input = {
-  subject: "Harness",
-  sender: "sender@example.com",
   body: "Plain text only",
   html: '<p data-signal="important">HTML body</p>',
+  sender: "sender@example.com",
+  subject: "Harness",
 };
 
 const runProgram = async (

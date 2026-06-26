@@ -102,8 +102,8 @@ export const saveManagedFilter = async (
     .insert(filterConfigs)
     .values({ accountId, ...next, customSource: null })
     .onConflictDoUpdate({
-      target: filterConfigs.accountId,
       set: next,
+      target: filterConfigs.accountId,
     });
 };
 
@@ -112,8 +112,8 @@ export const saveCustomFilter = async (
   customSource: string,
 ): Promise<void> => {
   const next = {
-    mode: "custom" as const,
     customSource: customSource.trim() || DEFAULT_CUSTOM_SOURCE,
+    mode: "custom" as const,
     updatedAt: Date.now(),
   };
   await db()
@@ -125,8 +125,8 @@ export const saveCustomFilter = async (
       tagPrompt: DEFAULT_TAG_PROMPT,
     })
     .onConflictDoUpdate({
-      target: filterConfigs.accountId,
       set: next,
+      target: filterConfigs.accountId,
     });
 };
 

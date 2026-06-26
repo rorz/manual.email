@@ -30,32 +30,32 @@ const trayId = (accountId: string, key: string) => `tray_${accountId}_${key}`;
 
 /** Reserved tags, in display order. */
 const DEFAULT_TAGS = [
-  { slug: RESERVED_TAGS.important, label: "Important", position: 0 },
-  { slug: RESERVED_TAGS.unimportant, label: "Unimportant", position: 1 },
+  { label: "Important", position: 0, slug: RESERVED_TAGS.important },
+  { label: "Unimportant", position: 1, slug: RESERVED_TAGS.unimportant },
 ] as const;
 
 /** Default trays. `tagSlug` links a `tag` tray to its backing reserved tag. */
 const DEFAULT_TRAYS = [
-  { key: "everything", name: "Everything", kind: "everything", position: 0 },
+  { key: "everything", kind: "everything", name: "Everything", position: 0 },
   {
-    key: RESERVED_TAGS.important,
-    name: "Important",
     color: "#a16207",
     icon: "star",
+    key: RESERVED_TAGS.important,
     kind: "tag",
+    name: "Important",
     position: 1,
     tagSlug: RESERVED_TAGS.important,
   },
   {
-    key: RESERVED_TAGS.unimportant,
-    name: "Unimportant",
     color: "#525252",
     icon: "archive",
+    key: RESERVED_TAGS.unimportant,
     kind: "tag",
+    name: "Unimportant",
     position: 2,
     tagSlug: RESERVED_TAGS.unimportant,
   },
-  { key: "quarantine", name: "Quarantine", kind: "quarantine", position: 3 },
+  { key: "quarantine", kind: "quarantine", name: "Quarantine", position: 3 },
 ] as const;
 
 /**
@@ -70,11 +70,11 @@ export const seedAccountDefaults = async (
     .insert(tags)
     .values(
       DEFAULT_TAGS.map((t) => ({
-        id: tagId(accountId, t.slug),
         accountId,
-        slug: t.slug,
+        id: tagId(accountId, t.slug),
         label: t.label,
         position: t.position,
+        slug: t.slug,
       })),
     )
     .onConflictDoNothing();
@@ -83,12 +83,12 @@ export const seedAccountDefaults = async (
     .insert(trays)
     .values(
       DEFAULT_TRAYS.map((t) => ({
-        id: trayId(accountId, t.key),
         accountId,
-        name: t.name,
         color: "color" in t ? t.color : null,
         icon: "icon" in t ? t.icon : null,
+        id: trayId(accountId, t.key),
         kind: t.kind,
+        name: t.name,
         position: t.position,
       })),
     )
@@ -97,8 +97,8 @@ export const seedAccountDefaults = async (
   const links = DEFAULT_TRAYS.filter(
     (t): t is typeof t & { tagSlug: string } => "tagSlug" in t,
   ).map((t) => ({
-    trayId: trayId(accountId, t.key),
     tagId: tagId(accountId, t.tagSlug),
+    trayId: trayId(accountId, t.key),
   }));
   if (links.length > 0) {
     await db.insert(trayTags).values(links).onConflictDoNothing();

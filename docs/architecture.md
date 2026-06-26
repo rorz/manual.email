@@ -16,7 +16,7 @@ types, query shapes, or baseline interface chrome.
 | Workspace | Role |
 | --- | --- |
 | `apps/web` | Next.js 16 UI, served on Cloudflare via vinext (Vite). BetterAuth username+password sign-in (the username is the address local-part — no email collected); every mutation is a server action (no API routes). Compose validates outbound mail and produces to `EGRESS_QUEUE`. |
-| `apps/ingress` | Receives mail (Email Routing `email()`), enqueues it, then consumes the ingress queue: idempotency → recipient resolution → **filter** (a per-message Sandbox program returns a verdict) → deliver. Re-exports the `Sandbox` Durable Object. |
+| `apps/ingress` | Receives mail (Email Routing `email()`), enqueues it, then consumes the ingress queue: idempotency → recipient resolution → **rule evaluation** (a per-message Sandbox filter program returns a verdict) → deliver. Re-exports the `Sandbox` Durable Object. |
 | `apps/egress` | Consumes the egress queue and sends outbound mail through Cloudflare Email Service (`SEND_EMAIL` binding). |
 | `packages/db` | Drizzle schema (single source of truth), the typed `createDb` client, R2 key helpers, and address parsing. |
 | `packages/contracts` | oRPC + `zod/mini` queue-payload contracts. The contract is the source of truth; worker message types are inferred from it. |
@@ -29,7 +29,7 @@ flowchart LR
   MX[Email Routing] -->|email&#40;&#41;| IN[ingress worker]
   IN -->|INGRESS_QUEUE| INQ[(manual-email-ingress)]
   INQ --> INC[ingress queue consumer]
-  INC -->|filter| SBX[Sandbox: filter program]
+  INC -->|evaluate rules| SBX[Sandbox: filter program]
   SBX -.managed.-> GEM[Gemini Flash Lite]
   INC -->|deliver + verdict| D1[(D1 manual-email)]
   WEB[web worker] -->|compose → EGRESS_QUEUE| EGQ[(manual-email-egress)]
@@ -45,7 +45,7 @@ arrive several times with identical bytes. On each invocation ingress resolves
 the recipient, streams the raw MIME to R2 under that owner's prefix (or a shared
 `unresolved/` one), and enqueues a metadata payload carrying a deterministic,
 recipient-scoped message id. The queue consumer is the single chokepoint that
-decides what is new: it dedupes on that id, **filters** the mail (below), then
+decides what is new: it dedupes on that id, evaluates the account's rules, then
 writes the `messages` row — with its verdict — that makes the mail show up in
 the mailbox. The id doubles as the row key and the R2 object id, so retries and
 redeliveries converge on one row/object.
@@ -69,7 +69,7 @@ mail for inspection instead of dropping it. The DLQ path does trivial work
 
 - **D1 `manual-email`** — the mail tables (`accounts`, `addresses` for recipient
   → account resolution, `messages`, `processed_messages` idempotency ledger,
-  `dead_letters`), the filtering tables (`tags` + `message_tags`, `trays` +
+  `dead_letters`), the rule-evaluation tables (`tags` + `message_tags`, `trays` +
   `tray_tags`, `message_verdicts`, `filter_configs`), the invite-only signup
   gate (`invite_codes`), plus BetterAuth's `user`/`session`/`account`/
   `verification` tables (web auth). `packages/db` owns the migrations
@@ -93,8 +93,8 @@ enters: `ingress.email()` parses the constructed payload with
 validates the user-supplied body with `composeRequestSchema` (deriving `from`
 from the authenticated session, not the client) before mapping it onto
 `outboundMessageSchema` and producing to `EGRESS_QUEUE`. Schemas use `zod/mini`
-to keep those bundled validators small. A third boundary is the filter program's
-output: `filterVerdictSchema` validates the verdict a Sandbox program returns
+to keep those bundled validators small. A third boundary is rule-program output:
+`filterVerdictSchema` validates the verdict a Sandbox program returns
 (untrusted, especially for custom programs) before it is persisted, while
 `filterInputSchema` shapes what the program sees.
 
@@ -112,7 +112,7 @@ routes (the `nextCookies()` plugin lets actions set the session cookie). Sign-up
 auto-provisions the user's mailbox: a `databaseHooks.user.create.after` hook
 resolves the derived address into an `accounts` row + primary `addresses` row
 through `parseAddress`, and seeds that account's default tags, trays, and managed
-filter config. That resolution is idempotent and is re-run lazily by
+rule config. That resolution is idempotent and is re-run lazily by
 `/inbox` and compose, keeping auth identity and mail identity one-to-one. Because
 compose derives `from` from the session, the web app is not an open relay.
 
@@ -129,41 +129,41 @@ compose derives `from` from the session, the web app is not an open relay.
   choose the R2 prefix the body is written under, and the consumer resolves
   again — authoritatively — to set the `messages` row's owning account.
 
-## Filtering
+## Rule evaluation
 
-Between resolution and delivery the consumer runs the account's **filter
-program** over `{ subject, sender, body, html }` (`body` = plain text extracted
-from the R2 MIME, `html` = decoded HTML body when present) and stores a 1:1
-verdict. A `pass` carries `tags`; a `reject` carries a `category`
-(`spam`/`phishing`/`other`) + `reason`. **Quarantine is derived, not a folder**
-— rejected mail still gets a `messages` row, surfaced in the Quarantine tray.
-Tags and trays are the organising primitives: a tray is a saved view over one or
+Between resolution and delivery the consumer evaluates the account's rules. The
+current runtime is one **filter program** per inbound message, fed
+`{ subject, sender, body, html }` (`body` = plain text extracted from the R2 MIME,
+`html` = decoded HTML body when present). It returns a verdict that is stored
+1:1 with the message: `pass` carries tag slugs; `reject` carries a
+`spam`/`phishing`/`other` category plus a reason. **Quarantine is derived, not a
+folder** — rejected mail still gets a `messages` row, surfaced in the Quarantine
+tray.
+
+Tags and trays are the organising primitives. A tray is a saved view over one or
 more tags, except the always-present `everything` (passed mail) and `quarantine`
-(rejected mail) views. Editable tag trays also carry their display color and
-Phosphor icon name. Sign-up seeds the reserved `important`/`unimportant` tags,
-their trays, and a managed config.
+(rejected mail) views. Editable tag trays also carry display color and Phosphor
+icon metadata. Sign-up seeds the reserved `important`/`unimportant` tags, their
+trays, and a managed rule config.
 
-Every message runs in a **Cloudflare Sandbox** (`bun`, internet access, with
-`ai`, `@ai-sdk/google`, and `zod` preinstalled). One harness drives both modes:
-it writes the shared `filter-contract.ts`, the managed source or the user's
-custom `main.ts` default export, the input, and the runner into a fresh dir. The
-runner validates input and verdicts at the same boundary custom programs can
-import as `FilterProgram`. **Managed** runs receive `GEMINI_FLASH_LITE` — the
-built-in program classifies via AI SDK structured output on
-`gemini-flash-lite-latest`, steered by two editable prompts: `safety_prompt`
-for pass/reject policy and `tag_prompt` for Important/Unimportant tagging. The
-product should recommend editing `tag_prompt`; changing `safety_prompt` changes
-the sender-facing rejection contract. **Custom** runs get no first-party secrets
-and a different sandbox id, so a custom program can never share a container with
-a key-bearing managed run.
+Every program run happens in a **Cloudflare Sandbox** (`bun`, internet access,
+with `ai`, `@ai-sdk/google`, and `zod` preinstalled). One harness drives both
+modes: it writes the shared `filter-contract.ts`, the managed source or the
+user's custom `main.ts` default export, the input, and the runner into a fresh
+directory. The runner validates input and verdicts at the same boundary custom
+programs can import as `FilterProgram`. **Managed** runs receive
+`GEMINI_FLASH_LITE` and classify through AI SDK structured output on
+`gemini-flash-lite-latest`; **custom** runs get no first-party secrets and use a
+different sandbox id, so they can never share a container with a key-bearing
+managed run.
 
 The failure policy is mode-aware so an outage never mass-quarantines real mail: a
-valid verdict is used as-is; a **custom** non-verdict fails closed to Quarantine
-(the user's program is the sender-facing contract); a **managed** non-verdict —
-or any infrastructure error (Sandbox unreachable, R2 read, body missing) — throws
-so the queue retries and, if exhausted, the message lands in the DLQ for
-inspection rather than being mislabelled. Filtering is gated on an existing
-verdict, so a retry that already filtered just re-delivers.
+valid verdict is used as-is; a **custom** non-verdict fails closed to Quarantine;
+a **managed** non-verdict — or any infrastructure error (Sandbox unreachable, R2
+read, body missing) — throws so the queue retries and, if exhausted, the message
+lands in the DLQ for inspection rather than being mislabelled. Rule evaluation
+is gated on an existing verdict, so a retry that already evaluated just
+re-delivers.
 
 ## Ports
 

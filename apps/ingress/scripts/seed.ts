@@ -54,7 +54,7 @@ execFileSync(
     "--command",
     statements.join(" "),
   ],
-  { stdio: "inherit", cwd: new URL("..", import.meta.url).pathname },
+  { cwd: new URL("..", import.meta.url).pathname, stdio: "inherit" },
 );
 
 console.log(`Seeded ${accountId} -> ${canonical.join(", ")}`);

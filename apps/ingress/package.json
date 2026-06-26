@@ -1,20 +1,4 @@
 {
-  "name": "@manual.email/ingress",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "wrangler dev --port 10130 --inspector-port 10131 --persist-to ../../.wrangler/state",
-    "deploy": "wrangler deploy",
-    "start": "wrangler dev --port 10130 --inspector-port 10131 --persist-to ../../.wrangler/state",
-    "cf-typegen": "wrangler types",
-    "seed": "bun scripts/seed.ts",
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "typescript": "catalog:",
-    "wrangler": "catalog:"
-  },
   "dependencies": {
     "@ai-sdk/google": "catalog:",
     "@cloudflare/sandbox": "catalog:",
@@ -24,5 +8,21 @@
     "drizzle-orm": "catalog:",
     "postal-mime": "catalog:",
     "zod": "catalog:"
-  }
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
+  },
+  "name": "@manual.email/ingress",
+  "private": true,
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --port 10130 --inspector-port 10131 --persist-to ../../.wrangler/state",
+    "seed": "bun scripts/seed.ts",
+    "start": "wrangler dev --port 10130 --inspector-port 10131 --persist-to ../../.wrangler/state",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

@@ -14,8 +14,8 @@ interface ComponentReference {
 
 export const primitiveImportBoundaries = defineRule({
   meta: {
-    id: RULE_ID,
     docs: "Prevent primitives from importing other UI component files.",
+    id: RULE_ID,
     kind: "file",
   },
   async run(context) {
@@ -58,14 +58,14 @@ export const detectPrimitiveImportViolations = (
 
     const location = locate(source, statement.getStart(sourceFile));
     findings.push({
-      ruleId: RULE_ID,
-      severity: "error",
-      message: "Primitives must not import other UI component files.",
-      file,
-      line: location.line,
-      column: location.column,
       advice:
         "Keep primitive dependencies local to the same component folder, or move shared code to packages/ui/src/utils.",
+      column: location.column,
+      file,
+      line: location.line,
+      message: "Primitives must not import other UI component files.",
+      ruleId: RULE_ID,
+      severity: "error",
     });
   }
 

@@ -13,11 +13,11 @@ describe("structure/max-file-lines", () => {
   test("reports oversized authored source files", async () => {
     const context = createContext({
       files: ["apps/web/src/app/page.tsx", "docs/architecture.md"],
+      options: { max: 350 },
       sources: {
         "apps/web/src/app/page.tsx": "\n".repeat(351),
         "docs/architecture.md": "\n".repeat(800),
       },
-      options: { max: 350 },
     });
 
     const result = await maxFileLines.run(context);
@@ -32,11 +32,11 @@ describe("structure/max-file-lines", () => {
         "packages/db/src/types.generated.ts",
         "packages/db/src/types.d.ts",
       ],
-      sources: {
-        "packages/db/src/types.generated.ts": "\n".repeat(351),
-        "packages/db/src/types.d.ts": "\n".repeat(351),
-      },
       options: { max: 350 },
+      sources: {
+        "packages/db/src/types.d.ts": "\n".repeat(351),
+        "packages/db/src/types.generated.ts": "\n".repeat(351),
+      },
     });
 
     const result = await maxFileLines.run(context);

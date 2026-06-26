@@ -12,10 +12,10 @@ import { z } from "zod/mini";
  *  plain-text part extracted from the MIME; `html` is the decoded HTML part
  *  when the MIME includes one; `sender` is the envelope from. */
 export const filterInputSchema = z.object({
-  subject: z.nullable(z.string()),
-  sender: z.email(),
   body: z.string(),
   html: z.nullable(z.string()),
+  sender: z.email(),
+  subject: z.nullable(z.string()),
 });
 
 /** Upper bound on tags a single verdict may apply — caps untrusted programs. */
@@ -38,8 +38,8 @@ const passVerdictSchema = z.object({
 /** Mail the program blocked. `category` is display-only metadata; every reject
  *  routes to the Quarantine tray regardless. `reason` is shown to the user. */
 const rejectVerdictSchema = z.object({
-  disposition: z.literal("reject"),
   category: z.enum(["spam", "phishing", "other"]),
+  disposition: z.literal("reject"),
   reason: z.string(),
 });
 

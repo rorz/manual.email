@@ -83,11 +83,11 @@ export const resolveMailbox = async (
   const accountId = `acct_${crypto.randomUUID()}`;
   await d
     .insert(accounts)
-    .values({ id: accountId, displayName: null })
+    .values({ displayName: null, id: accountId })
     .onConflictDoNothing();
   await d
     .insert(addresses)
-    .values({ address: canonical, accountId, isPrimary: true })
+    .values({ accountId, address: canonical, isPrimary: true })
     .onConflictDoNothing();
 
   // Re-read so a concurrent sign-up that won the insert race still resolves.
@@ -151,12 +151,12 @@ export const createTray = async (
   const trayId = `tray_${accountId}_${crypto.randomUUID()}`;
 
   await d.insert(trays).values({
-    id: trayId,
     accountId,
-    name: label,
     color: normalizeTrayColor(appearance.color ?? null),
     icon: normalizeTrayIcon(appearance.icon ?? null),
+    id: trayId,
     kind: "tag",
+    name: label,
     position: (last[0]?.position ?? 0) + 1,
   });
   await replaceTrayTags(d, trayId, ownedTagIds);
@@ -203,10 +203,10 @@ interface TrayAppearance {
 const listTags = (d: Db, accountId: string): Promise<MailTag[]> =>
   d
     .select({
-      id: tags.id,
-      slug: tags.slug,
-      label: tags.label,
       color: tags.color,
+      id: tags.id,
+      label: tags.label,
+      slug: tags.slug,
     })
     .from(tags)
     .where(eq(tags.accountId, accountId))
@@ -215,11 +215,11 @@ const listTags = (d: Db, accountId: string): Promise<MailTag[]> =>
 const listTrays = (d: Db, accountId: string) =>
   d
     .select({
-      id: trays.id,
-      name: trays.name,
       color: trays.color,
       icon: trays.icon,
+      id: trays.id,
       kind: trays.kind,
+      name: trays.name,
       position: trays.position,
     })
     .from(trays)

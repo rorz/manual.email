@@ -1,25 +1,7 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "manual-email-ingress",
-  "main": "src/index.ts",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
-  "observability": {
-    "enabled": true
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "manual-email",
-      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "MESSAGES_BUCKET",
-      "bucket_name": "manual-email-messages"
-    }
-  ],
   // The Sandbox runs each inbound message's filter program (managed or custom)
   // in an isolated bun container. Managed and custom runs use distinct sandbox
   // ids so a custom program never shares a container with a key-bearing managed
@@ -33,17 +15,37 @@
       "max_instances": 5
     }
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb",
+      "database_name": "manual-email"
+    }
+  ],
   "durable_objects": {
     "bindings": [{ "class_name": "Sandbox", "name": "Sandbox" }]
   },
+  "main": "src/index.ts",
   "migrations": [{ "new_sqlite_classes": ["Sandbox"], "tag": "v1" }],
-  "routes": [
-    {
-      "custom_domain": true,
-      "pattern": "ingress.manual.email"
-    }
-  ],
+  "name": "manual-email-ingress",
+  "observability": {
+    "enabled": true
+  },
   "queues": {
+    "consumers": [
+      {
+        "dead_letter_queue": "manual-email-ingress-dlq",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        "queue": "manual-email-ingress"
+      },
+      {
+        "max_batch_size": 10,
+        "max_batch_timeout": 30,
+        "queue": "manual-email-ingress-dlq"
+      }
+    ],
     "producers": [
       {
         "binding": "INGRESS_QUEUE",
@@ -53,20 +55,18 @@
         "binding": "EGRESS_QUEUE",
         "queue": "manual-email-egress"
       }
-    ],
-    "consumers": [
-      {
-        "queue": "manual-email-ingress",
-        "max_batch_size": 10,
-        "max_batch_timeout": 5,
-        "max_retries": 3,
-        "dead_letter_queue": "manual-email-ingress-dlq"
-      },
-      {
-        "queue": "manual-email-ingress-dlq",
-        "max_batch_size": 10,
-        "max_batch_timeout": 30
-      }
     ]
-  }
+  },
+  "r2_buckets": [
+    {
+      "binding": "MESSAGES_BUCKET",
+      "bucket_name": "manual-email-messages"
+    }
+  ],
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "ingress.manual.email"
+    }
+  ]
 }

@@ -20,25 +20,25 @@ const updatedAt = () => integer("updated_at", { mode: "timestamp" }).notNull();
 
 /** An authenticated person. */
 export const user = sqliteTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
+  createdAt: createdAt(),
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" })
     .notNull()
     .default(false),
+  id: text("id").primaryKey(),
   image: text("image"),
-  createdAt: createdAt(),
+  name: text("name").notNull(),
   updatedAt: updatedAt(),
 });
 
 /** A login session, keyed by an opaque bearer token. */
 export const session = sqliteTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  token: text("token").notNull().unique(),
   createdAt: createdAt(),
-  updatedAt: updatedAt(),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  id: text("id").primaryKey(),
   ipAddress: text("ip_address"),
+  token: text("token").notNull().unique(),
+  updatedAt: updatedAt(),
   userAgent: text("user_agent"),
   userId: text("user_id")
     .notNull()
@@ -47,35 +47,35 @@ export const session = sqliteTable("session", {
 
 /** Credentials / linked provider for a user (email+password lives here). */
 export const account = sqliteTable("account", {
-  id: text("id").primaryKey(),
-  accountId: text("account_id").notNull(),
-  providerId: text("provider_id").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
-  refreshToken: text("refresh_token"),
-  idToken: text("id_token"),
   accessTokenExpiresAt: integer("access_token_expires_at", {
     mode: "timestamp",
   }),
+  accountId: text("account_id").notNull(),
+  createdAt: createdAt(),
+  id: text("id").primaryKey(),
+  idToken: text("id_token"),
+  password: text("password"),
+  providerId: text("provider_id").notNull(),
+  refreshToken: text("refresh_token"),
   refreshTokenExpiresAt: integer("refresh_token_expires_at", {
     mode: "timestamp",
   }),
   scope: text("scope"),
-  password: text("password"),
-  createdAt: createdAt(),
   updatedAt: updatedAt(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
 });
 
 /** Short-lived verification tokens (email verify, password reset, …). */
 export const verification = sqliteTable("verification", {
+  createdAt: createdAt(),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: createdAt(),
   updatedAt: updatedAt(),
+  value: text("value").notNull(),
 });
 
 export type User = typeof user.$inferSelect;

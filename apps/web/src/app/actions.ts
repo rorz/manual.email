@@ -70,13 +70,13 @@ export const authenticate = async (
         password,
       };
       await getAuth().api.signUpEmail({
-        headers: await headers(),
         body,
+        headers: await headers(),
       });
     } else {
       await getAuth().api.signInEmail({
-        headers: await headers(),
         body: { email, password },
+        headers: await headers(),
       });
     }
   } catch (error) {
@@ -117,9 +117,9 @@ export const sendMessage = async (
   form: FormData,
 ): Promise<SendState> => {
   const parsed = composeRequestSchema.safeParse({
-    to: form.get("to"),
     subject: form.get("subject"),
     text: form.get("text"),
+    to: form.get("to"),
   });
   if (!parsed.success) return { status: "Invalid message" };
 
@@ -129,9 +129,9 @@ export const sendMessage = async (
   const { to, subject, text, html } = parsed.data;
   const outbound = outboundMessageSchema.parse({
     from: mailbox.address,
-    to,
     subject,
     text,
+    to,
     ...(html !== undefined ? { html } : {}),
   });
 

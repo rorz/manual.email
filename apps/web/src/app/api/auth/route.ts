@@ -8,7 +8,7 @@
  */
 export const GET = () =>
   Response.json({
+    endpoints: ["/api/auth/ok", "/api/auth/get-session"],
     ok: true,
     service: "better-auth",
-    endpoints: ["/api/auth/ok", "/api/auth/get-session"],
   });

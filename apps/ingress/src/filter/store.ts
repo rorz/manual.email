@@ -25,10 +25,10 @@ import { eq } from "drizzle-orm";
 import type { FilterProgram } from "./executor";
 
 const DEFAULT_PROGRAM: FilterProgram = {
+  customSource: null,
   mode: "managed",
   safetyPrompt: DEFAULT_SAFETY_PROMPT,
   tagPrompt: DEFAULT_TAG_PROMPT,
-  customSource: null,
 };
 
 /** An account's program config, defaulting to a managed run when unset. */
@@ -38,20 +38,20 @@ export const loadFilterConfig = async (
 ): Promise<FilterProgram> => {
   const row = await db
     .select({
+      customSource: filterConfigs.customSource,
       mode: filterConfigs.mode,
       safetyPrompt: filterConfigs.safetyPrompt,
       tagPrompt: filterConfigs.tagPrompt,
-      customSource: filterConfigs.customSource,
     })
     .from(filterConfigs)
     .where(eq(filterConfigs.accountId, accountId))
     .get();
   if (!row) return DEFAULT_PROGRAM;
   return {
+    customSource: row.customSource,
     mode: row.mode,
     safetyPrompt: row.safetyPrompt.trim() || DEFAULT_SAFETY_PROMPT,
     tagPrompt: row.tagPrompt.trim() || DEFAULT_TAG_PROMPT,
-    customSource: row.customSource,
   };
 };
 
@@ -78,9 +78,9 @@ export const recordVerdict = async (
   await db
     .insert(messageVerdicts)
     .values({
-      messageId,
-      disposition: verdict.disposition,
       category: verdict.disposition === "reject" ? verdict.category : null,
+      disposition: verdict.disposition,
+      messageId,
       reason: verdict.disposition === "reject" ? verdict.reason : null,
     })
     .onConflictDoNothing();
@@ -102,7 +102,7 @@ const applyTags = async (
   await db
     .insert(tags)
     .values(
-      unique.map((slug) => ({ id: tagId(slug), accountId, slug, label: slug })),
+      unique.map((slug) => ({ accountId, id: tagId(slug), label: slug, slug })),
     )
     .onConflictDoNothing();
   await db

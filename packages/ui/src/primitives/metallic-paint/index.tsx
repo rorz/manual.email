@@ -78,7 +78,7 @@ export const MetallicPaint = ({
   const rafRef = useRef<number | null>(null);
   const imgDataRef = useRef<ImageData | null>(null);
   const speedRef = useRef(speed);
-  const mouseRef = useRef({ x: 0.5, y: 0.5, targetX: 0.5, targetY: 0.5 });
+  const mouseRef = useRef({ targetX: 0.5, targetY: 0.5, x: 0.5, y: 0.5 });
   const mouseAnimRef = useRef(mouseAnimation);
 
   const [ready, setReady] = useState(false);
@@ -96,7 +96,7 @@ export const MetallicPaint = ({
     const canvas = canvasRef.current;
     if (!canvas) return false;
 
-    const gl = canvas.getContext("webgl2", { antialias: true, alpha: true });
+    const gl = canvas.getContext("webgl2", { alpha: true, antialias: true });
     if (!gl) return false;
 
     const paintProgram = createMetallicPaintProgram(gl);

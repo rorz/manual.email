@@ -1,21 +1,21 @@
 {
-  "name": "@manual.email/egress",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "wrangler dev --port 10140 --inspector-port 10141 --persist-to ../../.wrangler/state",
-    "deploy": "wrangler deploy",
-    "start": "wrangler dev --port 10140 --inspector-port 10141 --persist-to ../../.wrangler/state",
-    "cf-typegen": "wrangler types",
-    "typecheck": "tsc --noEmit"
+  "dependencies": {
+    "@manual.email/contracts": "workspace:*",
+    "@manual.email/db": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:",
     "wrangler": "catalog:"
   },
-  "dependencies": {
-    "@manual.email/contracts": "workspace:*",
-    "@manual.email/db": "workspace:*"
-  }
+  "name": "@manual.email/egress",
+  "private": true,
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --port 10140 --inspector-port 10141 --persist-to ../../.wrangler/state",
+    "start": "wrangler dev --port 10140 --inspector-port 10141 --persist-to ../../.wrangler/state",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

@@ -16,8 +16,8 @@ const sourceGlobs = [
 
 export const maxFileLines = defineRule<MaxFileLinesOptions>({
   meta: {
-    id: RULE_ID,
     docs: "Keep authored source files under the repo line ceiling.",
+    id: RULE_ID,
     kind: "project",
   },
   async run(context) {
@@ -31,13 +31,13 @@ export const maxFileLines = defineRule<MaxFileLinesOptions>({
       if (lines <= max) continue;
 
       findings.push({
-        ruleId: RULE_ID,
-        severity: "error" as const,
-        message: `File has ${lines} lines, above the configured maximum of ${max}.`,
-        file,
-        line: max + 1,
         advice:
           "Split the file into sibling modules, or add a top-of-file pokayoke-ignore-file with a reason.",
+        file,
+        line: max + 1,
+        message: `File has ${lines} lines, above the configured maximum of ${max}.`,
+        ruleId: RULE_ID,
+        severity: "error" as const,
       });
     }
 

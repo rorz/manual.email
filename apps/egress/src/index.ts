@@ -25,9 +25,9 @@ export default {
         const { from, to, subject, text, html } = message.body;
         await env.SEND_EMAIL.send({
           from,
-          to,
           subject,
           text,
+          to,
           ...(html !== undefined && { html }),
         });
         message.ack();
@@ -35,9 +35,9 @@ export default {
         // Email Service rejected/failed — leave it for the queue to retry, then
         // DLQ once retries are exhausted. Never silently drop outbound mail.
         console.error("egress send failed", {
-          to: message.body?.to,
           code: (error as { code?: string }).code,
           message: (error as Error).message,
+          to: message.body?.to,
         });
         message.retry();
       }

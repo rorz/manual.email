@@ -31,9 +31,9 @@ const createdAt = () =>
 
 /** A platform account (a user / mailbox owner). */
 export const accounts = sqliteTable("accounts", {
-  id: text("id").primaryKey(),
-  displayName: text("display_name"),
   createdAt: createdAt(),
+  displayName: text("display_name"),
+  id: text("id").primaryKey(),
 });
 
 /**
@@ -43,14 +43,14 @@ export const accounts = sqliteTable("accounts", {
 export const addresses = sqliteTable(
   "addresses",
   {
-    address: text("address").primaryKey(),
     accountId: text("account_id")
       .notNull()
       .references(() => accounts.id, { onDelete: "cascade" }),
+    address: text("address").primaryKey(),
+    createdAt: createdAt(),
     isPrimary: integer("is_primary", { mode: "boolean" })
       .notNull()
       .default(false),
-    createdAt: createdAt(),
   },
   (t) => [index("idx_addresses_account").on(t.accountId)],
 );
@@ -59,32 +59,32 @@ export const addresses = sqliteTable(
 export const messages = sqliteTable(
   "messages",
   {
-    id: text("id").primaryKey(),
     accountId: text("account_id")
       .notNull()
       .references(() => accounts.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
     direction: text("direction", {
       enum: ["inbound", "outbound"],
     }).notNull(),
-    messageId: text("message_id"),
-    inReplyTo: text("in_reply_to"),
-    threadId: text("thread_id"),
-    mailFrom: text("mail_from").notNull(),
-    rcptTo: text("rcpt_to").notNull(),
-    subject: text("subject"),
-    sizeBytes: integer("size_bytes").notNull(),
-    r2Key: text("r2_key").notNull(),
     folder: text("folder", {
       enum: ["inbox", "sent", "archive", "spam", "trash"],
     })
       .notNull()
       .default("inbox"),
+    id: text("id").primaryKey(),
+    inReplyTo: text("in_reply_to"),
     isRead: integer("is_read", { mode: "boolean" }).notNull().default(false),
     isStarred: integer("is_starred", { mode: "boolean" })
       .notNull()
       .default(false),
+    mailFrom: text("mail_from").notNull(),
+    messageId: text("message_id"),
+    r2Key: text("r2_key").notNull(),
+    rcptTo: text("rcpt_to").notNull(),
     receivedAt: integer("received_at").notNull(),
-    createdAt: createdAt(),
+    sizeBytes: integer("size_bytes").notNull(),
+    subject: text("subject"),
+    threadId: text("thread_id"),
   },
   (t) => [
     index("idx_messages_account_received").on(t.accountId, t.receivedAt),
@@ -108,10 +108,10 @@ export const processedMessages = sqliteTable("processed_messages", {
  * silently dropping it. `body` is the JSON queue payload.
  */
 export const deadLetters = sqliteTable("dead_letters", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  queue: text("queue").notNull(),
   body: text("body").notNull(),
   failedAt: integer("failed_at").notNull(),
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  queue: text("queue").notNull(),
 });
 
 /**
@@ -148,15 +148,15 @@ export const inviteCodes = sqliteTable(
 export const tags = sqliteTable(
   "tags",
   {
-    id: text("id").primaryKey(),
     accountId: text("account_id")
       .notNull()
       .references(() => accounts.id, { onDelete: "cascade" }),
-    slug: text("slug").notNull(),
-    label: text("label").notNull(),
     color: text("color"),
-    position: integer("position").notNull().default(0),
     createdAt: createdAt(),
+    id: text("id").primaryKey(),
+    label: text("label").notNull(),
+    position: integer("position").notNull().default(0),
+    slug: text("slug").notNull(),
   },
   (t) => [uniqueIndex("uniq_tags_account_slug").on(t.accountId, t.slug)],
 );
@@ -186,20 +186,20 @@ export const messageTags = sqliteTable(
 export const trays = sqliteTable(
   "trays",
   {
-    id: text("id").primaryKey(),
     accountId: text("account_id")
       .notNull()
       .references(() => accounts.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
     color: text("color"),
+    createdAt: createdAt(),
     icon: text("icon"),
+    id: text("id").primaryKey(),
     kind: text("kind", {
       enum: ["everything", "quarantine", "tag"],
     })
       .notNull()
       .default("tag"),
+    name: text("name").notNull(),
     position: integer("position").notNull().default(0),
-    createdAt: createdAt(),
   },
   (t) => [index("idx_trays_account").on(t.accountId)],
 );
@@ -208,12 +208,12 @@ export const trays = sqliteTable(
 export const trayTags = sqliteTable(
   "tray_tags",
   {
-    trayId: text("tray_id")
-      .notNull()
-      .references(() => trays.id, { onDelete: "cascade" }),
     tagId: text("tag_id")
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
+    trayId: text("tray_id")
+      .notNull()
+      .references(() => trays.id, { onDelete: "cascade" }),
   },
   (t) => [primaryKey({ columns: [t.trayId, t.tagId] })],
 );
@@ -224,13 +224,13 @@ export const trayTags = sqliteTable(
  * `category`/`reason` are only set for rejects.
  */
 export const messageVerdicts = sqliteTable("message_verdicts", {
+  category: text("category", { enum: ["spam", "phishing", "other"] }),
+  createdAt: createdAt(),
+  disposition: text("disposition", { enum: ["pass", "reject"] }).notNull(),
   messageId: text("message_id")
     .primaryKey()
     .references(() => messages.id, { onDelete: "cascade" }),
-  disposition: text("disposition", { enum: ["pass", "reject"] }).notNull(),
-  category: text("category", { enum: ["spam", "phishing", "other"] }),
   reason: text("reason"),
-  createdAt: createdAt(),
 });
 
 /**
@@ -243,12 +243,12 @@ export const filterConfigs = sqliteTable("filter_configs", {
   accountId: text("account_id")
     .primaryKey()
     .references(() => accounts.id, { onDelete: "cascade" }),
+  customSource: text("custom_source"),
   mode: text("mode", { enum: ["managed", "custom"] })
     .notNull()
     .default("managed"),
   safetyPrompt: text("safety_prompt").notNull().default(""),
   tagPrompt: text("tag_prompt").notNull().default(""),
-  customSource: text("custom_source"),
   updatedAt: integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`),
 });
 

@@ -1,15 +1,21 @@
 {
-  "name": "@manual.email/db",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
+  "dependencies": {
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "better-auth": "catalog:",
+    "drizzle-kit": "catalog:",
+    "wrangler": "catalog:"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./address": "./src/address.ts",
     "./client": "./src/client.ts",
-    "./schema": "./src/schema.ts",
-    "./keys": "./src/keys.ts"
+    "./keys": "./src/keys.ts",
+    "./schema": "./src/schema.ts"
   },
+  "name": "@manual.email/db",
+  "private": true,
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply manual-email --local --persist-to ../../.wrangler/state",
@@ -18,12 +24,6 @@
     "db:splat:local": "bun scripts/splat-local.ts",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "drizzle-orm": "catalog:"
-  },
-  "devDependencies": {
-    "better-auth": "catalog:",
-    "drizzle-kit": "catalog:",
-    "wrangler": "catalog:"
-  }
+  "type": "module",
+  "version": "0.0.0"
 }

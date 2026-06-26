@@ -1,16 +1,4 @@
 {
-  "name": "@manual.email/web",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vinext dev --port 10120",
-    "build": "vinext build",
-    "start": "vinext start --port 10120",
-    "deploy": "vinext deploy",
-    "cf-typegen": "wrangler types",
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
     "@better-auth/infra": "catalog:",
     "@manual.email/contracts": "workspace:*",
@@ -40,8 +28,20 @@
     "vite": "catalog:",
     "wrangler": "catalog:"
   },
+  "name": "@manual.email/web",
+  "private": true,
+  "scripts": {
+    "build": "vinext build",
+    "cf-typegen": "wrangler types",
+    "deploy": "vinext deploy",
+    "dev": "vinext dev --port 10120",
+    "start": "vinext start --port 10120",
+    "typecheck": "tsc --noEmit"
+  },
   "trustedDependencies": [
     "sharp",
     "unrs-resolver"
-  ]
+  ],
+  "type": "module",
+  "version": "0.1.0"
 }

@@ -9,8 +9,8 @@ const utilityBucket = "utils";
 
 export const uiSourceBuckets = defineRule({
   meta: {
-    id: RULE_ID,
     docs: "Keep shared UI source split into primitives, composites, and utils.",
+    id: RULE_ID,
     kind: "project",
   },
   async run(context) {
@@ -90,13 +90,13 @@ const detectTopLevelComponentBucketViolations = (
 
   return [
     {
-      ruleId: RULE_ID,
-      severity: "error",
-      message:
-        "Top-level component bucket files must be TSX components or index.ts barrels.",
+      advice: `Move component-private helper files under packages/ui/src/${bucket}/<component>/, or move shared helpers to packages/ui/src/utils.`,
       file,
       line: 1,
-      advice: `Move component-private helper files under packages/ui/src/${bucket}/<component>/, or move shared helpers to packages/ui/src/utils.`,
+      message:
+        "Top-level component bucket files must be TSX components or index.ts barrels.",
+      ruleId: RULE_ID,
+      severity: "error",
     },
   ];
 };
@@ -139,14 +139,14 @@ const detectUtilityBucketViolations = (
 
   return [
     {
-      ruleId: RULE_ID,
-      severity: "error",
-      message:
-        "Component files in the UI package belong in primitives or composites.",
-      file,
-      line: 1,
       advice:
         "Move TSX components to packages/ui/src/primitives or packages/ui/src/composites.",
+      file,
+      line: 1,
+      message:
+        "Component files in the UI package belong in primitives or composites.",
+      ruleId: RULE_ID,
+      severity: "error",
     },
   ];
 };
@@ -223,13 +223,13 @@ const componentFolderSplitFinding = (
   file: string,
   componentName: string,
 ): Finding => ({
-  ruleId: RULE_ID,
-  severity: "error",
-  message: `Files for "${componentName}" must live inside that component folder.`,
-  file,
-  line: 1,
   advice:
     "Keep multi-file UI components under packages/ui/src/primitives/<name>/ or packages/ui/src/composites/<name>/.",
+  file,
+  line: 1,
+  message: `Files for "${componentName}" must live inside that component folder.`,
+  ruleId: RULE_ID,
+  severity: "error",
 });
 
 const missingComponentEntrypointFinding = (
@@ -237,12 +237,12 @@ const missingComponentEntrypointFinding = (
   bucket: string,
   componentName: string,
 ): Finding => ({
-  ruleId: RULE_ID,
-  severity: "error",
-  message: `Component folder "${componentName}" is missing ${COMPONENT_ENTRYPOINT}.`,
+  advice: `Add packages/ui/src/${bucket}/${componentName}/${COMPONENT_ENTRYPOINT}, or move this file out of the component bucket.`,
   file,
   line: 1,
-  advice: `Add packages/ui/src/${bucket}/${componentName}/${COMPONENT_ENTRYPOINT}, or move this file out of the component bucket.`,
+  message: `Component folder "${componentName}" is missing ${COMPONENT_ENTRYPOINT}.`,
+  ruleId: RULE_ID,
+  severity: "error",
 });
 
 const componentEntrypointExtensionFinding = (
@@ -250,21 +250,21 @@ const componentEntrypointExtensionFinding = (
   bucket: string,
   componentName: string,
 ): Finding => ({
-  ruleId: RULE_ID,
-  severity: "error",
-  message: `Component folder "${componentName}" must use ${COMPONENT_ENTRYPOINT}.`,
+  advice: `Rename packages/ui/src/${bucket}/${componentName}/${INDEX_FILE} to ${COMPONENT_ENTRYPOINT}.`,
   file,
   line: 1,
-  advice: `Rename packages/ui/src/${bucket}/${componentName}/${INDEX_FILE} to ${COMPONENT_ENTRYPOINT}.`,
+  message: `Component folder "${componentName}" must use ${COMPONENT_ENTRYPOINT}.`,
+  ruleId: RULE_ID,
+  severity: "error",
 });
 
 const invalidBucketFinding = (file: string): Finding => ({
-  ruleId: RULE_ID,
-  severity: "error",
-  message:
-    "UI source must live under packages/ui/src/primitives, packages/ui/src/composites, or packages/ui/src/utils.",
-  file,
-  line: 1,
   advice:
     "Move the file into the matching UI bucket and re-export it from that bucket's index.",
+  file,
+  line: 1,
+  message:
+    "UI source must live under packages/ui/src/primitives, packages/ui/src/composites, or packages/ui/src/utils.",
+  ruleId: RULE_ID,
+  severity: "error",
 });

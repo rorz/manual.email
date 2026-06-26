@@ -1,16 +1,16 @@
 {
-  "name": "@manual.email/contracts",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
     "@orpc/contract": "catalog:",
     "zod": "catalog:"
-  }
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "name": "@manual.email/contracts",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

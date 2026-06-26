@@ -16,8 +16,8 @@ export default defineConfig({
       // is only exercised up to the egress enqueue locally.
       persistState: { path: "../../.wrangler/state" },
       viteEnvironment: {
-        name: "rsc",
         childEnvironments: ["ssr"],
+        name: "rsc",
       },
     }),
   ],

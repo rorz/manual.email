@@ -27,7 +27,7 @@ export const drainDeadLetters = async (
   for (const message of messages) {
     await db
       .insert(deadLetters)
-      .values({ queue, body: JSON.stringify(message.body), failedAt });
+      .values({ body: JSON.stringify(message.body), failedAt, queue });
     message.ack();
   }
 };

@@ -1,18 +1,40 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "manual-email-egress",
-  "main": "src/index.ts",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
-  "observability": {
-    "enabled": true
-  },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "manual-email",
       // Replace with the real D1 id from `wrangler d1 create manual-email`.
-      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb"
+      "database_id": "c07bb08e-b372-4a26-b887-35b5329885fb",
+      "database_name": "manual-email"
+    }
+  ],
+  "main": "src/index.ts",
+  "name": "manual-email-egress",
+  "observability": {
+    "enabled": true
+  },
+  "queues": {
+    "consumers": [
+      {
+        "dead_letter_queue": "manual-email-egress-dlq",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        "queue": "manual-email-egress"
+      },
+      {
+        "max_batch_size": 10,
+        "max_batch_timeout": 30,
+        "queue": "manual-email-egress-dlq"
+      }
+    ]
+  },
+  "r2_buckets": [
+    {
+      "binding": "MESSAGES_BUCKET",
+      "bucket_name": "manual-email-messages"
     }
   ],
   "routes": [
@@ -21,31 +43,9 @@
       "pattern": "egress.manual.email"
     }
   ],
-  "r2_buckets": [
-    {
-      "binding": "MESSAGES_BUCKET",
-      "bucket_name": "manual-email-messages"
-    }
-  ],
   "send_email": [
     {
       "name": "SEND_EMAIL"
     }
-  ],
-  "queues": {
-    "consumers": [
-      {
-        "queue": "manual-email-egress",
-        "max_batch_size": 10,
-        "max_batch_timeout": 5,
-        "max_retries": 3,
-        "dead_letter_queue": "manual-email-egress-dlq"
-      },
-      {
-        "queue": "manual-email-egress-dlq",
-        "max_batch_size": 10,
-        "max_batch_timeout": 30
-      }
-    ]
-  }
+  ]
 }

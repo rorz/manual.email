@@ -32,5 +32,5 @@ export const parseAddress = (raw: string): ParsedAddress | null => {
   const tag = plus === -1 ? null : rawLocal.slice(plus + 1);
   if (!local || domain.includes("@")) return null;
 
-  return { canonical: `${local}@${domain}`, local, domain, tag };
+  return { canonical: `${local}@${domain}`, domain, local, tag };
 };

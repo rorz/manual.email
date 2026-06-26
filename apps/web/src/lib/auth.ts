@@ -49,38 +49,11 @@ const userIdFromReturned = (returned: unknown): string | null => {
 
 const createAuth = () =>
   betterAuth({
+    baseURL: env.BETTER_AUTH_URL,
     database: drizzleAdapter(createDb(env.DB), {
       provider: "sqlite",
-      schema: { user, session, account, verification },
+      schema: { account, session, user, verification },
     }),
-    emailAndPassword: { enabled: true },
-    secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
-    hooks: {
-      before: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== "/sign-up/email") return;
-        const code = inviteCodeFromBody(ctx.body);
-        if (!code) {
-          throw inviteOnlyError("New signups are invite only for now.");
-        }
-        const reserved = await reserveInviteCode(createDb(env.DB), code);
-        if (!reserved) {
-          throw inviteOnlyError("Invite code is invalid or already used.");
-        }
-        ctx.body.inviteCode = code;
-      }),
-      after: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== "/sign-up/email") return;
-        const code = inviteCodeFromBody(ctx.body);
-        if (!code) return;
-        const userId = userIdFromReturned(ctx.context.returned);
-        if (userId) {
-          await redeemInviteCode(createDb(env.DB), code, userId);
-        } else {
-          await releaseInviteCode(createDb(env.DB), code);
-        }
-      }),
-    },
     databaseHooks: {
       user: {
         create: {
@@ -94,6 +67,32 @@ const createAuth = () =>
         },
       },
     },
+    emailAndPassword: { enabled: true },
+    hooks: {
+      after: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-up/email") return;
+        const code = inviteCodeFromBody(ctx.body);
+        if (!code) return;
+        const userId = userIdFromReturned(ctx.context.returned);
+        if (userId) {
+          await redeemInviteCode(createDb(env.DB), code, userId);
+        } else {
+          await releaseInviteCode(createDb(env.DB), code);
+        }
+      }),
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-up/email") return;
+        const code = inviteCodeFromBody(ctx.body);
+        if (!code) {
+          throw inviteOnlyError("New signups are invite only for now.");
+        }
+        const reserved = await reserveInviteCode(createDb(env.DB), code);
+        if (!reserved) {
+          throw inviteOnlyError("Invite code is invalid or already used.");
+        }
+        ctx.body.inviteCode = code;
+      }),
+    },
     // Must be last: lets server actions persist the session cookie that
     // `auth.api.*` calls produce. The Better Auth Infrastructure dashboard
     // (analytics, audit logs, admin APIs) is enabled when an API key is
@@ -104,6 +103,7 @@ const createAuth = () =>
         : []),
       nextCookies(),
     ],
+    secret: env.BETTER_AUTH_SECRET,
   });
 
 let cached: ReturnType<typeof createAuth> | undefined;

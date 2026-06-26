@@ -35,8 +35,8 @@ class FilterUnavailableError extends Error {
 }
 
 const QUARANTINE: FilterVerdict = {
-  disposition: "reject",
   category: "other",
+  disposition: "reject",
   reason: "Filter program did not return a valid verdict.",
 };
 

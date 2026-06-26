@@ -41,7 +41,7 @@ export const filterMessage = async (
     env.Sandbox,
     accountId,
     program,
-    { subject: body.subject, sender: body.from, ...bodies },
+    { sender: body.from, subject: body.subject, ...bodies },
     env.GEMINI_FLASH_LITE,
   );
   const verdict = interpretOutput(program.mode, raw);

@@ -11,8 +11,8 @@ interface ComponentDeclaration {
 
 export const oneUiComponentPerFile = defineRule({
   meta: {
-    id: RULE_ID,
     docs: "Keep each shared UI component in its own file.",
+    id: RULE_ID,
     kind: "file",
   },
   async run(context) {
@@ -47,14 +47,14 @@ export const detectViolations = (
 
   return [
     {
-      ruleId: RULE_ID,
-      severity: "error",
-      message: `File declares ${components.length} UI components: ${componentNames}.`,
-      file,
-      line: location.line,
-      column: location.column,
       advice:
         "Move each component into its own file and re-export it from the nearest barrel.",
+      column: location.column,
+      file,
+      line: location.line,
+      message: `File declares ${components.length} UI components: ${componentNames}.`,
+      ruleId: RULE_ID,
+      severity: "error",
     },
   ];
 };

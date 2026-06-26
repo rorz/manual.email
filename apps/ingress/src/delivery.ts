@@ -21,18 +21,18 @@ export const deliver = async (
   await db
     .insert(messages)
     .values({
-      id: body.id,
       accountId,
       direction: "inbound",
-      messageId: body.messageId,
+      id: body.id,
       inReplyTo: body.inReplyTo,
-      threadId,
       mailFrom: body.from,
-      rcptTo: body.to,
-      subject: body.subject,
-      sizeBytes: body.rawSize,
+      messageId: body.messageId,
       r2Key: body.r2Key,
+      rcptTo: body.to,
       receivedAt: Date.parse(body.receivedAt),
+      sizeBytes: body.rawSize,
+      subject: body.subject,
+      threadId,
     })
     .onConflictDoNothing();
 };

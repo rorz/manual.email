@@ -9,8 +9,8 @@ import {
 } from "./schema";
 
 export const contract = {
-  ingress: { accept: oc.input(inboundMessageSchema).output(ackSchema) },
   egress: { send: oc.input(outboundMessageSchema).output(ackSchema) },
+  ingress: { accept: oc.input(inboundMessageSchema).output(ackSchema) },
 };
 
 type Inputs = InferContractRouterInputs<typeof contract>;

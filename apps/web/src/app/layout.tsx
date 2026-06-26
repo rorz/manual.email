@@ -11,13 +11,13 @@ const zalandoSans = Zalando_Sans({
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
-  title: "manual.email",
   description: "A humanist email client.",
+  title: "manual.email",
 };
 
 const RootLayout = ({

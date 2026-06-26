@@ -7,8 +7,8 @@ type FunctionNode = ts.FunctionDeclaration | ts.FunctionExpression;
 
 export const enforceArrowFunction = defineRule({
   meta: {
-    id: RULE_ID,
     docs: "Prefer arrow bindings over function declarations or expressions.",
+    id: RULE_ID,
     kind: "file",
   },
   async run(context) {
@@ -47,13 +47,13 @@ export const detectViolations = (
     const subject = functionSubject(node);
 
     findings.push({
-      ruleId: RULE_ID,
-      severity: "error",
-      message: `Use an arrow function instead of "${subject}".`,
+      advice: "Prefer const name = (...) => { ... }.",
+      column: location.column,
       file,
       line: location.line,
-      column: location.column,
-      advice: "Prefer const name = (...) => { ... }.",
+      message: `Use an arrow function instead of "${subject}".`,
+      ruleId: RULE_ID,
+      severity: "error",
     });
   }
 

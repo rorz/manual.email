@@ -53,7 +53,7 @@ const drawImageToCanvas = (img: HTMLImageElement): CanvasSnapshot => {
 
   context.drawImage(img, 0, 0, width, height);
 
-  return { context, width, height };
+  return { context, height, width };
 };
 
 const scaledImageDimensions = (img: HTMLImageElement): ImageDimensions => {
@@ -62,8 +62,8 @@ const scaledImageDimensions = (img: HTMLImageElement): ImageDimensions => {
   const scale = imageScale(width, height);
 
   return {
-    width: Math.round(width * scale),
     height: Math.round(height * scale),
+    width: Math.round(width * scale),
   };
 };
 

@@ -63,16 +63,16 @@ export default {
     // Email Routing data becomes a structured payload. The queue consumer then
     // trusts the contract type (no re-parse).
     const inbound = inboundMessageSchema.parse({
-      idempotencyKey: key,
-      id,
-      r2Key,
       from: message.from,
-      to: message.to,
-      subject: message.headers.get("subject"),
-      messageId: message.headers.get("message-id"),
+      id,
+      idempotencyKey: key,
       inReplyTo: message.headers.get("in-reply-to"),
+      messageId: message.headers.get("message-id"),
+      r2Key,
       rawSize: raw.byteLength,
       receivedAt: new Date().toISOString(),
+      subject: message.headers.get("subject"),
+      to: message.to,
     } satisfies IngressMessage);
     await env.INGRESS_QUEUE.send(inbound);
   },
